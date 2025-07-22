@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coffee Recipe Tracker - Access Guide</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            line-height: 1.6;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .emoji {
+            font-size: 1.2em;
+            margin-right: 8px;
+        }
+        .url-box {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        .url-box a {
+            color: #FFE082;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .url-box a:hover {
+            color: #FFF176;
+            text-decoration: underline;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.full { background: #4CAF50; }
+        .status.ui-only { background: #FF9800; }
+        .section {
+            margin: 25px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .feature {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        .instructions {
+            background: rgba(76, 175, 80, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(76, 175, 80, 0.5);
+            margin: 20px 0;
+        }
+        .troubleshooting {
+            background: rgba(255, 152, 0, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 152, 0, 0.5);
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><span class="emoji">☕</span>Coffee Recipe Tracker<span class="emoji">📱</span></h1>
+        
+        <div class="instructions">
+            <h2><span class="emoji">🎉</span>Your Application is Ready!</h2>
+            <p>Choose one of the URLs below to access your Coffee Recipe Tracker:</p>
+        </div>
+        
+        <div class="section">
+            <h3><span class="emoji">🚀</span>Option 1: Full Application (Recommended)</h3>
+            <div class="url-box">
+                <span class="emoji">💻</span><strong>Local Development:</strong><br>
+                <a href="http://localhost:3000/" target="_blank">http://localhost:3000/</a>
+                <span class="status full">FULL FEATURES</span>
+            </div>
+            <div class="url-box">
+                <span class="emoji">🌐</span><strong>Network Access:</strong><br>
+                <a href="http://192.168.1.107:3000/" target="_blank">http://192.168.1.107:3000/</a>
+                <span class="status full">FULL FEATURES</span>
+            </div>
+            <p><strong>Includes:</strong> All functionality, real data, search, filtering, export, etc.</p>
+        </div>
+        
+        <div class="section">
+            <h3><span class="emoji">🖼️</span>Option 2: UI Preview (Backup)</h3>
+            <div class="url-box">
+                <span class="emoji">📱</span><strong>Static Preview:</strong><br>
+                <a href="http://localhost:8888/" target="_blank">http://localhost:8888/</a>
+                <span class="status ui-only">UI ONLY</span>
+            </div>
+            <div class="url-box">
+                <span class="emoji">🌍</span><strong>Network Preview:</strong><br>
+                <a href="http://192.168.1.107:8888/" target="_blank">http://192.168.1.107:8888/</a>
+                <span class="status ui-only">UI ONLY</span>
+            </div>
+            <p><strong>Shows:</strong> Complete design, layout, components, and styling (no data functionality)</p>
+        </div>
+        
+        <div class="section">
+            <h3><span class="emoji">✨</span>What You'll Experience</h3>
+            <div class="features">
+                <div class="feature">
+                    <strong>🏠 Navigation</strong><br>
+                    3-tab interface: Input, Recipes, Favorites
+                </div>
+                <div class="feature">
+                    <strong>📝 Recipe Input</strong><br>
+                    Complete form with 5 sections
+                </div>
+                <div class="feature">
+                    <strong>📊 Recipe List</strong><br>
+                    Card grid with search and filtering
+                </div>
+                <div class="feature">
+                    <strong>🔍 Advanced Search</strong><br>
+                    Real-time search with highlighting
+                </div>
+                <div class="feature">
+                    <strong>🎛️ Advanced Filters</strong><br>
+                    8 different filter types
+                </div>
+                <div class="feature">
+                    <strong>📤 Export System</strong><br>
+                    PDF, CSV, JSON export formats
+                </div>
+                <div class="feature">
+                    <strong>📱 Responsive Design</strong><br>
+                    Mobile-friendly interface
+                </div>
+                <div class="feature">
+                    <strong>⌨️ Keyboard Shortcuts</strong><br>
+                    Ctrl+K, Ctrl+S, Escape, etc.
+                </div>
+            </div>
+        </div>
+        
+        <div class="troubleshooting">
+            <h3><span class="emoji">🔧</span>Troubleshooting</h3>
+            <p><strong>If links don't work:</strong></p>
+            <ul>
+                <li>Try the network URLs (192.168.1.107) instead of localhost</li>
+                <li>Check if your firewall is blocking the ports</li>
+                <li>Try a different browser</li>
+                <li>Use the Static Preview option as a fallback</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h3><span class="emoji">🏗️</span>Development Status</h3>
+            <p>✅ <strong>Steps 1-13 Completed:</strong> Full application with advanced features<br>
+            🚧 <strong>Step 14 Pending:</strong> Recipe Collections Management<br>
+            🎯 <strong>Ready for:</strong> Full testing and Step 14 implementation</p>
+        </div>
+        
+        <div style="text-align: center; margin-top: 40px; opacity: 0.8;">
+            <p><span class="emoji">🚀</span> Built with React + TypeScript + Tailwind CSS <span class="emoji">🎨</span></p>
+        </div>
+    </div>
+
+    <script>
+        // Auto-refresh every 30 seconds to check server status
+        setTimeout(() => {
+            location.reload();
+        }, 30000);
+        
+        // Add click tracking
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function() {
+                console.log('Attempting to open:', this.href);
+            });
+        });
+    </script>
+</body>
+</html>
