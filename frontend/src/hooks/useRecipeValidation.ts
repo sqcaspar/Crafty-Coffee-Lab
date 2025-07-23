@@ -112,7 +112,13 @@ export const useRecipeValidation = () => {
   // Validate individual field
   const validateField = useCallback((fieldPath: string, value: any, formData: any) => {
     try {
+      // DEBUG: Log field validation start
+      console.log('🧪 validateField called:', { fieldPath, value, type: typeof value });
+      
       const cleanValue = safeValue(value);
+      
+      // DEBUG: Log cleaned value
+      console.log('🧹 Cleaned value:', { cleanValue, originalValue: value });
       
       // Determine which schema to use based on field path
       let schema;
@@ -124,6 +130,25 @@ export const useRecipeValidation = () => {
         dataToValidate = { ...formData.beanInfo };
         if (fieldName) {
           dataToValidate[fieldName] = cleanValue;
+        }
+        
+        // DEBUG: Log beanInfo validation setup
+        console.log('🫘 BeanInfo validation setup:', { 
+          fieldName, 
+          cleanValue, 
+          dataToValidate,
+          originalBeanInfo: formData.beanInfo
+        });
+        
+        // DEBUG: Special case for origin field
+        if (fieldName === 'origin') {
+          console.log('🌍 Origin field validation details:', {
+            fieldPath,
+            fieldName,
+            cleanValue,
+            dataToValidate,
+            schemaName: 'BeanInfoSchema'
+          });
         }
       } else if (fieldPath.startsWith('brewingParameters.')) {
         const fieldName = fieldPath.split('.')[1];
@@ -155,17 +180,43 @@ export const useRecipeValidation = () => {
       }
 
       if (!schema) {
+        console.log('⚠️ No schema found for field:', fieldPath);
         return { isValid: true };
       }
 
+      // DEBUG: Log schema validation attempt
+      console.log('🔬 About to validate with schema:', {
+        fieldPath,
+        schema: schema.constructor.name,
+        dataToValidate,
+        cleanValue
+      });
+
       // Partial validation - only validate if field has a value or is required
       const result = schema.safeParse(dataToValidate);
+      
+      // DEBUG: Log schema validation result
+      console.log('🎯 Schema validation result:', {
+        fieldPath,
+        success: result.success,
+        dataToValidate,
+        result: result.success ? 'SUCCESS' : result.error
+      });
       
       if (result.success) {
         return { isValid: true };
       } else {
         const fieldName = fieldPath.split('.').pop();
         const error = getFieldError(result.error, fieldName || '');
+        
+        // DEBUG: Log validation error details
+        console.error('💥 Validation failed for', fieldPath, ':', {
+          fieldName,
+          error,
+          allIssues: result.error.issues,
+          dataToValidate
+        });
+        
         return { isValid: false, error: error || result.error.issues[0]?.message || 'Invalid value' };
       }
     } catch (error) {
@@ -175,7 +226,32 @@ export const useRecipeValidation = () => {
 
   // Update validation state for a specific field
   const updateFieldValidation = useCallback((fieldPath: string, value: any, formData: any) => {
+    // DEBUG: Log validation calls
+    console.log('🔍 updateFieldValidation called:', { fieldPath, value, type: typeof value });
+    
+    // DEBUG: Special logging for origin field validation
+    if (fieldPath === 'beanInfo.origin') {
+      console.log('🌍 Validating origin field:', { 
+        value, 
+        formDataBeanInfo: formData?.beanInfo,
+        originValue: formData?.beanInfo?.origin
+      });
+    }
+    
     const result = validateField(fieldPath, value, formData);
+    
+    // DEBUG: Log validation result
+    console.log('📊 Validation result for', fieldPath, ':', result);
+    
+    // DEBUG: Special logging for origin validation result
+    if (fieldPath === 'beanInfo.origin' && !result.isValid) {
+      console.error('❌ Origin validation failed:', { 
+        fieldPath, 
+        value, 
+        error: result.error,
+        formData: formData?.beanInfo 
+      });
+    }
     
     setValidationState(prev => {
       const newState = { ...prev };
