@@ -3,7 +3,7 @@ import BackupRestoreModal from './BackupRestoreModal';
 import KeyboardShortcutsModal from './KeyboardShortcutsModal';
 import ThemeToggle from './ui/ThemeToggle';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
-import { useTheme } from '../hooks/useTheme';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface LayoutProps {
   children: ReactNode;

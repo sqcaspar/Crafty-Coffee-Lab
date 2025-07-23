@@ -1,9 +1,9 @@
+/* Import monochrome design system */
+@import './design-system.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Import monochrome design system */
-@import './design-system.css';
 
 @layer base {
   /* Inter font with optimized loading */
@@ -59,15 +59,25 @@
     @apply btn-mono-secondary;
   }
   
+@layer components {
   /* Updated legacy input styles */
   .input {
-    @apply input-mono;
+    @apply px-4 py-3 bg-mono-white border border-mono-300 rounded-xl;
+    @apply text-mono-800 placeholder-mono-400;
+    @apply focus:outline-none focus:ring-2 focus:ring-mono-800 focus:border-mono-800;
+    @apply transition-all duration-200;
+  }
+  
+  .input:focus {
+    @apply shadow-lg;
   }
   
   /* Updated legacy card styles */
   .card {
-    @apply card-mono;
+    @apply bg-mono-white border border-mono-200 rounded-2xl;
+    @apply shadow-sm transition-all duration-300;
   }
+}
   
   /* Dark mode overrides (if needed) */
   .dark .btn-mono-primary {
