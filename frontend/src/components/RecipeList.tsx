@@ -4,6 +4,7 @@ import { recipeService } from '../services/recipeService';
 import { useToast } from './ui/ToastContainer';
 import { useSearch } from '../hooks/useSearch';
 import { useFilters } from '../hooks/useFilters';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import RecipeCard from './RecipeCard';
 import SearchBar from './SearchBar';
 import FilterPanel from './FilterPanel';
@@ -12,6 +13,7 @@ import ExportHistoryModal from './ExportHistoryModal';
 import RecipeComparisonModal from './RecipeComparisonModal';
 import { comparisonService } from '../services/comparisonService';
 import LoadingSpinner from './ui/LoadingSpinner';
+import { SkeletonCard } from './ui/SkeletonLoader';
 
 interface RecipeListProps {
   onEditRecipe?: (recipeId: string) => void;
@@ -342,10 +344,27 @@ export default function RecipeList({ onEditRecipe, onViewRecipe, refreshTrigger 
   // Loading state
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-center py-12">
-          <LoadingSpinner size="large" />
-          <span className="ml-3 text-lg text-gray-600">Loading recipes...</span>
+      <div className="container-mono space-y-section">
+        {/* Loading Search Bar */}
+        <div className="card-mono">
+          <div className="h-12 bg-mono-100 rounded-lg animate-pulse"></div>
+        </div>
+        
+        {/* Loading Header */}
+        <div className="flex items-center justify-between">
+          <div className="h-8 w-48 bg-mono-100 rounded-lg animate-pulse"></div>
+          <div className="flex space-x-2">
+            <div className="h-8 w-20 bg-mono-100 rounded-lg animate-pulse"></div>
+            <div className="h-8 w-20 bg-mono-100 rounded-lg animate-pulse"></div>
+            <div className="h-8 w-20 bg-mono-100 rounded-lg animate-pulse"></div>
+          </div>
+        </div>
+        
+        {/* Loading Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <SkeletonCard key={index} className="h-80" />
+          ))}
         </div>
       </div>
     );
@@ -354,19 +373,29 @@ export default function RecipeList({ onEditRecipe, onViewRecipe, refreshTrigger 
   // Error state
   if (error) {
     return (
-      <div className="text-center py-12">
-        <div className="max-w-md mx-auto">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <h3 className="text-lg font-medium text-red-800 mb-2">
-              Failed to Load Recipes
-            </h3>
-            <p className="text-red-600 mb-4">{error}</p>
-            <button
-              onClick={loadRecipes}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-            >
-              Try Again
-            </button>
+      <div className="container-mono">
+        <div className="text-center py-section">
+          <div className="max-w-md mx-auto">
+            <div className="card-mono bg-mono-50 border-2 border-mono-300">
+              <div className="w-16 h-16 mx-auto mb-4 bg-mono-200 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-mono-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h3 className="heading-lg text-mono-900 mb-2">
+                Failed to Load Recipes
+              </h3>
+              <p className="text-body text-mono-600 mb-6">{error}</p>
+              <button
+                onClick={loadRecipes}
+                className="btn-mono-primary"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Try Again
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -376,9 +405,9 @@ export default function RecipeList({ onEditRecipe, onViewRecipe, refreshTrigger 
   // Empty state for no recipes at all
   if (recipes.length === 0) {
     return (
-      <div className="space-y-6">
+      <div className="container-mono space-y-section">
         {/* Search bar (even with no recipes) */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="card-mono">
           <SearchBar
             value={searchQuery}
             onChange={setSearchQuery}
@@ -388,22 +417,22 @@ export default function RecipeList({ onEditRecipe, onViewRecipe, refreshTrigger 
           />
         </div>
 
-        <div className="text-center py-12">
+        <div className="text-center py-section">
           <div className="max-w-md mx-auto">
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-8">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gray-200 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="card-mono bg-mono-50">
+              <div className="w-20 h-20 mx-auto mb-6 bg-mono-100 rounded-full flex items-center justify-center">
+                <svg className="w-10 h-10 text-mono-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="heading-lg text-mono-900 mb-3">
                 No Recipes Found
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-body text-mono-600 mb-4">
                 You haven't created any coffee brewing recipes yet.
               </p>
-              <p className="text-sm text-gray-500">
-                Switch to the Input tab to create your first recipe!
+              <p className="text-body-sm text-mono-500">
+                Switch to the Brew Journal tab to create your first recipe!
               </p>
             </div>
           </div>
@@ -413,10 +442,10 @@ export default function RecipeList({ onEditRecipe, onViewRecipe, refreshTrigger 
   }
 
   return (
-    <div className="space-y-6">
+    <div className="container-mono space-y-section">
       {/* Search and Filter Bar */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center space-x-4">
+      <div className="card-mono">
+        <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
             <SearchBar
               value={searchQuery}
@@ -426,33 +455,33 @@ export default function RecipeList({ onEditRecipe, onViewRecipe, refreshTrigger 
               resultCount={resultCount}
             />
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center flex-wrap gap-3">
             <button
               onClick={() => setIsExportModalOpen(true)}
-              className="flex items-center space-x-2 px-4 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              className="btn-mono-secondary flex items-center space-x-2"
               title="Export all recipes"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <span className="text-sm font-medium">Export</span>
+              <span className="text-body-sm font-medium">Export</span>
             </button>
             <button
               onClick={() => setIsExportHistoryModalOpen(true)}
-              className="flex items-center space-x-2 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="btn-mono-secondary flex items-center space-x-2"
               title="View export history"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span className="text-sm font-medium">History</span>
+              <span className="text-body-sm font-medium">History</span>
             </button>
             <button
               onClick={() => setIsComparisonModalOpen(true)}
-              className={`relative flex items-center space-x-2 px-4 py-2.5 border rounded-lg transition-colors ${
+              className={`relative flex items-center space-x-2 px-4 py-2 rounded-lg border transition-all duration-200 ${
                 comparisonCount > 0
-                  ? 'bg-purple-50 dark:bg-purple-900/20 border-purple-300 dark:border-purple-600 text-purple-700 dark:text-purple-300'
-                  : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  ? 'bg-stone-100 border-stone-300 text-stone-800 hover:bg-stone-200'
+                  : 'btn-mono-secondary'
               }`}
               title="View recipe comparison"
             >

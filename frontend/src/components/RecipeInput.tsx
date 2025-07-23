@@ -484,61 +484,120 @@ export default function RecipeInput({
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [lastSaved, formData]);
 
+  // Accordion state management
+  const [activePanel, setActivePanel] = useState<string>('basic');
+  
+  const togglePanel = (panelId: string) => {
+    setActivePanel(activePanel === panelId ? '' : panelId);
+  };
+
+  // Accordion panel configuration
+  const accordionPanels = [
+    { 
+      id: 'basic', 
+      title: 'Bean Information', 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+        </svg>
+      )
+    },
+    { 
+      id: 'brewing', 
+      title: 'Brewing Parameters', 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      )
+    },
+    { 
+      id: 'measurements', 
+      title: 'Measurements', 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+        </svg>
+      )
+    },
+    { 
+      id: 'tasting', 
+      title: 'Tasting Evaluation', 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        </svg>
+      )
+    }
+  ];
+
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center space-x-2">
-              <h2 className="text-xl font-semibold text-gray-900">
-                {mode === 'edit' ? 'Edit Recipe' : 'Create New Recipe'}
-              </h2>
-              {isDirty && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                  <div className="w-2 h-2 bg-yellow-400 rounded-full mr-1"></div>
-                  Unsaved changes
-                </span>
+    <div className="container-mono">
+      <div className="card-mono">
+        {/* Header Section */}
+        <div className="mb-section">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center space-x-3">
+                <h1 className="heading-xl text-mono-900">
+                  {mode === 'edit' ? 'Edit Recipe' : 'Create New Recipe'}
+                </h1>
+                {isDirty && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-caption font-medium bg-stone-100 text-stone-700 border border-stone-200">
+                    <div className="w-2 h-2 bg-stone-400 rounded-full mr-2 animate-pulse"></div>
+                    Unsaved changes
+                  </span>
+                )}
+              </div>
+              <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:space-x-6 space-y-2 sm:space-y-0">
+                <p className="text-body text-mono-600">
+                  {mode === 'edit' 
+                    ? 'Update your brewing parameters and tasting notes'
+                    : 'Enter your brewing parameters and tasting notes'
+                  }
+                </p>
+                <div className="flex items-center space-x-4 text-caption text-mono-400">
+                  <span className="flex items-center space-x-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <span>Ctrl+S to save</span>
+                  </span>
+                  <span className="flex items-center space-x-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <span>Esc to cancel</span>
+                  </span>
+                </div>
+              </div>
+              {mode === 'edit' && lastModified && (
+                <p className="text-caption text-mono-500 mt-2">
+                  Last modified: {new Date(lastModified).toLocaleString()}
+                </p>
               )}
             </div>
-            <div className="mt-1 flex items-center space-x-4">
-              <p className="text-sm text-gray-600">
-                {mode === 'edit' 
-                  ? 'Update your brewing parameters and tasting notes'
-                  : 'Enter your brewing parameters and tasting notes'
-                }
-              </p>
-              <div className="text-xs text-gray-400 space-x-2">
-                <span>💾 Ctrl+S to save</span>
-                <span>⎋ Esc to cancel</span>
+            {lastSaved && (
+              <div className="text-body-sm text-mono-500">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-mono-400 rounded-full animate-pulse"></div>
+                  <span>Draft saved {lastSaved.toLocaleTimeString()}</span>
+                </div>
               </div>
-            </div>
-            {mode === 'edit' && lastModified && (
-              <p className="text-xs text-gray-500 mt-1">
-                Last modified: {new Date(lastModified).toLocaleString()}
-              </p>
             )}
           </div>
-          {lastSaved && (
-            <div className="text-sm text-gray-500">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span>Draft saved {lastSaved.toLocaleTimeString()}</span>
-              </div>
-            </div>
-          )}
         </div>
-      </div>
 
-      {/* Validation Summary */}
-      <ValidationSummary 
-        errors={validationErrors}
-        isVisible={showValidationSummary}
-        onClose={() => setShowValidationSummary(false)}
-      />
+        {/* Validation Summary */}
+        <ValidationSummary 
+          errors={validationErrors}
+          isVisible={showValidationSummary}
+          onClose={() => setShowValidationSummary(false)}
+        />
 
-      <div className="space-y-8">
-        {/* Recipe Name */}
-        <div className="pb-4 border-b border-gray-200">
+        {/* Recipe Name - Outside Accordion */}
+        <div className="mb-section">
           <TextInput
             id="recipeName"
             label="Recipe Name"
@@ -550,261 +609,310 @@ export default function RecipeInput({
             error={getFieldValidation('recipeName').error}
           />
           {!formData.recipeName && (
-            <p className="mt-2 text-sm text-gray-500">
-              Auto-generated: <span className="font-medium">{generateRecipeName()}</span>
+            <p className="mt-2 text-body-sm text-mono-500">
+              Auto-generated: <span className="font-medium text-mono-700">{generateRecipeName()}</span>
             </p>
           )}
         </div>
 
-        {/* Bean Information Section */}
-        <div className="border-b border-gray-200 pb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Bean Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <TextInput
-              id="origin"
-              label="Origin"
-              value={formData.beanInfo.origin}
-              onChange={(value) => updateFormData('beanInfo.origin', value)}
-              onBlur={(value) => handleFieldBlur('beanInfo.origin', value)}
-              placeholder="e.g., Ethiopia, Colombia, Guatemala"
-              required
-              error={getFieldValidation('beanInfo.origin').error}
-            />
-            <TextInput
-              id="processingMethod"
-              label="Processing Method"
-              value={formData.beanInfo.processingMethod}
-              onChange={(value) => updateFormData('beanInfo.processingMethod', value)}
-              onBlur={(value) => handleFieldBlur('beanInfo.processingMethod', value)}
-              placeholder="e.g., Washed, Natural, Honey"
-              required
-              error={getFieldValidation('beanInfo.processingMethod').error}
-            />
-            <NumberInput
-              id="altitude"
-              label="Altitude"
-              value={formData.beanInfo.altitude || ''}
-              onChange={(value) => updateFormData('beanInfo.altitude', value === '' ? undefined : value)}
-              unit="meters"
-              placeholder="e.g., 1200"
-              min={0}
-            />
-            <div>
-              <label htmlFor="roastingDate" className="block text-sm font-medium text-gray-700">
-                Roasting Date
-              </label>
-              <input
-                type="date"
-                id="roastingDate"
-                value={formData.beanInfo.roastingDate || ''}
-                onChange={(e) => updateFormData('beanInfo.roastingDate', e.target.value || undefined)}
-                max={new Date().toISOString().split('T')[0]}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-            <Select
-              id="roastingLevel"
-              label="Roasting Level"
-              value={formData.beanInfo.roastingLevel || ''}
-              onChange={(value) => updateFormData('beanInfo.roastingLevel', value || undefined)}
-              options={roastingLevelOptions}
-              placeholder="Select roasting level"
-            />
-          </div>
-        </div>
+        {/* Accordion Container */}
+        <div className="space-y-4">{accordionPanels.map((panel) => (
+            <div
+              key={panel.id}
+              className="border border-mono-200 rounded-lg overflow-hidden transition-all duration-300 ease-in-out hover:border-mono-300"
+            >
+              {/* Accordion Header */}
+              <button
+                type="button"
+                onClick={() => togglePanel(panel.id)}
+                className="w-full px-6 py-4 bg-mono-50 hover:bg-mono-100 flex items-center justify-between text-left transition-colors duration-200 focus-mono"
+                aria-expanded={activePanel === panel.id}
+                aria-controls={`panel-${panel.id}`}
+              >
+                <div className="flex items-center space-x-3">
+                  <span className="text-mono-600">{panel.icon}</span>
+                  <h3 className="heading-md text-mono-900">{panel.title}</h3>
+                </div>
+                <svg
+                  className={`w-5 h-5 text-mono-600 transition-transform duration-300 ease-in-out ${
+                    activePanel === panel.id ? 'rotate-180' : ''
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
 
-        {/* Brewing Parameters Section */}
-        <div className="border-b border-gray-200 pb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Brewing Parameters</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <NumberInput
-              id="waterTemperature"
-              label="Water Temperature"
-              value={formData.brewingParameters.waterTemperature || ''}
-              onChange={(value) => updateFormData('brewingParameters.waterTemperature', value === '' ? undefined : value)}
-              unit="°C"
-              placeholder="e.g., 93"
-              min={60}
-              max={100}
-            />
-            <Select
-              id="brewingMethod"
-              label="Brewing Method"
-              value={formData.brewingParameters.brewingMethod || ''}
-              onChange={(value) => updateFormData('brewingParameters.brewingMethod', value || undefined)}
-              options={brewingMethodOptions}
-              placeholder="Select brewing method"
-            />
-            <TextInput
-              id="grinderModel"
-              label="Grinder Model"
-              value={formData.brewingParameters.grinderModel}
-              onChange={(value) => updateFormData('brewingParameters.grinderModel', value)}
-              onBlur={(value) => handleFieldBlur('brewingParameters.grinderModel', value)}
-              placeholder="e.g., Baratza Encore"
-              required
-              error={getFieldValidation('brewingParameters.grinderModel').error}
-            />
-            <TextInput
-              id="grinderUnit"
-              label="Grinder Setting"
-              value={formData.brewingParameters.grinderUnit}
-              onChange={(value) => updateFormData('brewingParameters.grinderUnit', value)}
-              onBlur={(value) => handleFieldBlur('brewingParameters.grinderUnit', value)}
-              placeholder="e.g., Medium-coarse, Setting 20"
-              required
-              error={getFieldValidation('brewingParameters.grinderUnit').error}
-            />
-            <TextInput
-              id="filteringTools"
-              label="Filtering Tools"
-              value={formData.brewingParameters.filteringTools || ''}
-              onChange={(value) => updateFormData('brewingParameters.filteringTools', value || undefined)}
-              placeholder="e.g., V60 filters, Metal mesh"
-            />
-            <TextInput
-              id="turbulence"
-              label="Turbulence"
-              value={formData.brewingParameters.turbulence || ''}
-              onChange={(value) => updateFormData('brewingParameters.turbulence', value || undefined)}
-              placeholder="e.g., 3 stirs, gentle agitation"
-            />
-          </div>
-          <div className="mt-4">
-            <TextArea
-              id="additionalNotes"
-              label="Additional Notes"
-              value={formData.brewingParameters.additionalNotes || ''}
-              onChange={(value) => updateFormData('brewingParameters.additionalNotes', value || undefined)}
-              placeholder="Any extra brewing notes, observations, or techniques used..."
-              rows={3}
-            />
-          </div>
-        </div>
+              {/* Accordion Content */}
+              <div
+                id={`panel-${panel.id}`}
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  activePanel === panel.id ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+                }`}
+                style={{
+                  transitionProperty: 'max-height, opacity',
+                  transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)'
+                }}
+              >
+                <div className="p-6 bg-mono-white border-t border-mono-200">
+                  {panel.id === 'basic' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <TextInput
+                        id="origin"
+                        label="Origin"
+                        value={formData.beanInfo.origin}
+                        onChange={(value) => updateFormData('beanInfo.origin', value)}
+                        onBlur={(value) => handleFieldBlur('beanInfo.origin', value)}
+                        placeholder="e.g., Ethiopia, Colombia, Guatemala"
+                        required
+                        error={getFieldValidation('beanInfo.origin').error}
+                      />
+                      <TextInput
+                        id="processingMethod"
+                        label="Processing Method"
+                        value={formData.beanInfo.processingMethod}
+                        onChange={(value) => updateFormData('beanInfo.processingMethod', value)}
+                        onBlur={(value) => handleFieldBlur('beanInfo.processingMethod', value)}
+                        placeholder="e.g., Washed, Natural, Honey"
+                        required
+                        error={getFieldValidation('beanInfo.processingMethod').error}
+                      />
+                      <NumberInput
+                        id="altitude"
+                        label="Altitude"
+                        value={formData.beanInfo.altitude || ''}
+                        onChange={(value) => updateFormData('beanInfo.altitude', value === '' ? undefined : value)}
+                        unit="meters"
+                        placeholder="e.g., 1200"
+                        min={0}
+                      />
+                      <div>
+                        <label htmlFor="roastingDate" className="block text-body-sm font-medium text-mono-700 mb-2">
+                          Roasting Date
+                        </label>
+                        <input
+                          type="date"
+                          id="roastingDate"
+                          value={formData.beanInfo.roastingDate || ''}
+                          onChange={(e) => updateFormData('beanInfo.roastingDate', e.target.value || undefined)}
+                          max={new Date().toISOString().split('T')[0]}
+                          className="input-mono"
+                        />
+                      </div>
+                      <Select
+                        id="roastingLevel"
+                        label="Roasting Level"
+                        value={formData.beanInfo.roastingLevel || ''}
+                        onChange={(value) => updateFormData('beanInfo.roastingLevel', value || undefined)}
+                        options={roastingLevelOptions}
+                        placeholder="Select roasting level"
+                      />
+                    </div>
+                  )}
 
-        {/* Measurements Section */}
-        <div className="border-b border-gray-200 pb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Measurements</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <NumberInput
-              id="coffeeBeans"
-              label="Coffee Beans"
-              value={formData.measurements.coffeeBeans}
-              onChange={(value) => updateFormData('measurements.coffeeBeans', value)}
-              onBlur={(value) => handleFieldBlur('measurements.coffeeBeans', value)}
-              unit="g"
-              placeholder="e.g., 25"
-              min={0}
-              required
-              error={getFieldValidation('measurements.coffeeBeans').error}
-            />
-            <NumberInput
-              id="water"
-              label="Water"
-              value={formData.measurements.water}
-              onChange={(value) => updateFormData('measurements.water', value)}
-              onBlur={(value) => handleFieldBlur('measurements.water', value)}
-              unit="g"
-              placeholder="e.g., 400"
-              min={0}
-              required
-              error={getFieldValidation('measurements.water').error}
-            />
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Coffee-to-Water Ratio
-              </label>
-              <div className="px-3 py-2 bg-blue-50 border border-blue-200 rounded-md text-blue-800 font-medium">
-                {coffeeWaterRatio || 'Enter coffee and water amounts'}
+                  {panel.id === 'brewing' && (
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <NumberInput
+                          id="waterTemperature"
+                          label="Water Temperature"
+                          value={formData.brewingParameters.waterTemperature || ''}
+                          onChange={(value) => updateFormData('brewingParameters.waterTemperature', value === '' ? undefined : value)}
+                          unit="°C"
+                          placeholder="e.g., 93"
+                          min={60}
+                          max={100}
+                        />
+                        <Select
+                          id="brewingMethod"
+                          label="Brewing Method"
+                          value={formData.brewingParameters.brewingMethod || ''}
+                          onChange={(value) => updateFormData('brewingParameters.brewingMethod', value || undefined)}
+                          options={brewingMethodOptions}
+                          placeholder="Select brewing method"
+                        />
+                        <TextInput
+                          id="grinderModel"
+                          label="Grinder Model"
+                          value={formData.brewingParameters.grinderModel}
+                          onChange={(value) => updateFormData('brewingParameters.grinderModel', value)}
+                          onBlur={(value) => handleFieldBlur('brewingParameters.grinderModel', value)}
+                          placeholder="e.g., Baratza Encore"
+                          required
+                          error={getFieldValidation('brewingParameters.grinderModel').error}
+                        />
+                        <TextInput
+                          id="grinderUnit"
+                          label="Grinder Setting"
+                          value={formData.brewingParameters.grinderUnit}
+                          onChange={(value) => updateFormData('brewingParameters.grinderUnit', value)}
+                          onBlur={(value) => handleFieldBlur('brewingParameters.grinderUnit', value)}
+                          placeholder="e.g., Medium-coarse, Setting 20"
+                          required
+                          error={getFieldValidation('brewingParameters.grinderUnit').error}
+                        />
+                        <TextInput
+                          id="filteringTools"
+                          label="Filtering Tools"
+                          value={formData.brewingParameters.filteringTools || ''}
+                          onChange={(value) => updateFormData('brewingParameters.filteringTools', value || undefined)}
+                          placeholder="e.g., V60 filters, Metal mesh"
+                        />
+                        <TextInput
+                          id="turbulence"
+                          label="Turbulence"
+                          value={formData.brewingParameters.turbulence || ''}
+                          onChange={(value) => updateFormData('brewingParameters.turbulence', value || undefined)}
+                          placeholder="e.g., 3 stirs, gentle agitation"
+                        />
+                      </div>
+                      <div className="mt-6">
+                        <TextArea
+                          id="additionalNotes"
+                          label="Additional Notes"
+                          value={formData.brewingParameters.additionalNotes || ''}
+                          onChange={(value) => updateFormData('brewingParameters.additionalNotes', value || undefined)}
+                          placeholder="Any extra brewing notes, observations, or techniques used..."
+                          rows={3}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {panel.id === 'measurements' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <NumberInput
+                        id="coffeeBeans"
+                        label="Coffee Beans"
+                        value={formData.measurements.coffeeBeans}
+                        onChange={(value) => updateFormData('measurements.coffeeBeans', value)}
+                        onBlur={(value) => handleFieldBlur('measurements.coffeeBeans', value)}
+                        unit="g"
+                        placeholder="e.g., 25"
+                        min={0}
+                        required
+                        error={getFieldValidation('measurements.coffeeBeans').error}
+                      />
+                      <NumberInput
+                        id="water"
+                        label="Water"
+                        value={formData.measurements.water}
+                        onChange={(value) => updateFormData('measurements.water', value)}
+                        onBlur={(value) => handleFieldBlur('measurements.water', value)}
+                        unit="g"
+                        placeholder="e.g., 400"
+                        min={0}
+                        required
+                        error={getFieldValidation('measurements.water').error}
+                      />
+                      <div>
+                        <label className="block text-body-sm font-medium text-mono-700 mb-2">
+                          Coffee-to-Water Ratio
+                        </label>
+                        <div className="px-4 py-3 bg-stone-50 border border-stone-200 rounded-lg text-stone-800 font-medium">
+                          {coffeeWaterRatio || 'Enter coffee and water amounts'}
+                        </div>
+                      </div>
+                      <NumberInput
+                        id="tds"
+                        label="TDS"
+                        value={formData.measurements.tds || ''}
+                        onChange={(value) => updateFormData('measurements.tds', value === '' ? undefined : value)}
+                        unit="%"
+                        placeholder="e.g., 1.35"
+                        min={0}
+                        max={5}
+                        step={0.01}
+                      />
+                      <NumberInput
+                        id="extractionYield"
+                        label="Extraction Yield"
+                        value={formData.measurements.extractionYield || ''}
+                        onChange={(value) => updateFormData('measurements.extractionYield', value === '' ? undefined : value)}
+                        unit="%"
+                        placeholder="e.g., 20"
+                        min={0}
+                        max={30}
+                        step={0.1}
+                      />
+                    </div>
+                  )}
+
+                  {panel.id === 'tasting' && (
+                    <>
+                      <TastingNotesPanel
+                        data={{
+                          overallImpression: formData.sensationRecord.overallImpression === '' ? undefined : formData.sensationRecord.overallImpression,
+                          acidity: formData.sensationRecord.acidity,
+                          body: formData.sensationRecord.body,
+                          sweetness: formData.sensationRecord.sweetness,
+                          flavor: formData.sensationRecord.flavor,
+                          aftertaste: formData.sensationRecord.aftertaste,
+                          balance: formData.sensationRecord.balance,
+                          tastingNotes: formData.sensationRecord.tastingNotes
+                        }}
+                        onChange={(data: TastingNotesData) => {
+                          // Update all sensation record fields at once
+                          updateFormData('sensationRecord', {
+                            overallImpression: data.overallImpression,
+                            acidity: data.acidity,
+                            body: data.body,
+                            sweetness: data.sweetness,
+                            flavor: data.flavor,
+                            aftertaste: data.aftertaste,
+                            balance: data.balance,
+                            tastingNotes: data.tastingNotes
+                          });
+                          
+                          // Trigger validation for required overall impression
+                          if (data.overallImpression !== undefined) {
+                            handleFieldBlur('sensationRecord.overallImpression', data.overallImpression);
+                          }
+                        }}
+                        disabled={isLoading}
+                        showPresets={!isLoading}
+                      />
+                      {getFieldValidation('sensationRecord.overallImpression').error && (
+                        <div className="mt-4 p-4 bg-mono-100 border border-mono-300 rounded-lg">
+                          <p className="text-body-sm text-mono-700">
+                            {getFieldValidation('sensationRecord.overallImpression').error}
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
             </div>
-            <NumberInput
-              id="tds"
-              label="TDS"
-              value={formData.measurements.tds || ''}
-              onChange={(value) => updateFormData('measurements.tds', value === '' ? undefined : value)}
-              unit="%"
-              placeholder="e.g., 1.35"
-              min={0}
-              max={5}
-              step={0.01}
-            />
-            <NumberInput
-              id="extractionYield"
-              label="Extraction Yield"
-              value={formData.measurements.extractionYield || ''}
-              onChange={(value) => updateFormData('measurements.extractionYield', value === '' ? undefined : value)}
-              unit="%"
-              placeholder="e.g., 20"
-              min={0}
-              max={30}
-              step={0.1}
-            />
-          </div>
-        </div>
-
-        {/* Enhanced Tasting Evaluation Section */}
-        <div className="pb-6">
-          <TastingNotesPanel
-            data={{
-              overallImpression: formData.sensationRecord.overallImpression === '' ? undefined : formData.sensationRecord.overallImpression,
-              acidity: formData.sensationRecord.acidity,
-              body: formData.sensationRecord.body,
-              sweetness: formData.sensationRecord.sweetness,
-              flavor: formData.sensationRecord.flavor,
-              aftertaste: formData.sensationRecord.aftertaste,
-              balance: formData.sensationRecord.balance,
-              tastingNotes: formData.sensationRecord.tastingNotes
-            }}
-            onChange={(data: TastingNotesData) => {
-              // Update all sensation record fields at once
-              updateFormData('sensationRecord', {
-                overallImpression: data.overallImpression,
-                acidity: data.acidity,
-                body: data.body,
-                sweetness: data.sweetness,
-                flavor: data.flavor,
-                aftertaste: data.aftertaste,
-                balance: data.balance,
-                tastingNotes: data.tastingNotes
-              });
-              
-              // Trigger validation for required overall impression
-              if (data.overallImpression !== undefined) {
-                handleFieldBlur('sensationRecord.overallImpression', data.overallImpression);
-              }
-            }}
-            disabled={isLoading}
-            showPresets={!isLoading}
-          />
-          {getFieldValidation('sensationRecord.overallImpression').error && (
-            <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <p className="text-sm text-red-600 dark:text-red-400">
-                {getFieldValidation('sensationRecord.overallImpression').error}
-              </p>
-            </div>
-          )}
-        </div>
+          ))}</div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+        <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-section border-t border-mono-200">
           <button 
             type="button"
             onClick={handleClearForm}
             disabled={isLoading}
-            className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-mono-secondary flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Clear Form
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            <span>Clear Form</span>
           </button>
           <button 
             type="button"
             onClick={handleSaveRecipe}
             disabled={isLoading}
-            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+            className="btn-mono-primary flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading && (
               <LoadingSpinner size="small" color="white" />
             )}
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
             <span>
               {isLoading 
                 ? (mode === 'edit' ? 'Updating...' : 'Saving...') 
@@ -816,15 +924,15 @@ export default function RecipeInput({
 
         {/* Loading Overlay */}
         {isLoading && (
-          <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
+          <div className="fixed inset-0 bg-mono-900 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
+            <div className="card-mono max-w-sm mx-4 shadow-xl">
               <div className="flex items-center space-x-4">
                 <LoadingSpinner size="medium" />
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900">
+                  <h3 className="heading-md text-mono-900">
                     {loadingMessage}
                   </h3>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-body-sm text-mono-600 mt-1">
                     Please don't close this window...
                   </p>
                 </div>
