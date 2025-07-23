@@ -137,13 +137,7 @@ export const useRecipeValidation = () => {
   // Validate individual field
   const validateField = useCallback((fieldPath: string, value: any, formData: any) => {
     try {
-      // DEBUG: Log field validation start
-      console.log('🧪 validateField called:', { fieldPath, value, type: typeof value });
-      
       const cleanValue = safeValue(value);
-      
-      // DEBUG: Log cleaned value
-      console.log('🧹 Cleaned value:', { cleanValue, originalValue: value });
       
       // Use individual field schemas for isolated validation
       let schema;
@@ -152,10 +146,8 @@ export const useRecipeValidation = () => {
       // BeanInfo field validation
       if (fieldPath === 'beanInfo.origin') {
         schema = OriginFieldSchema;
-        console.log('🌍 Origin field isolated validation:', { cleanValue, schemaName: 'OriginFieldSchema' });
       } else if (fieldPath === 'beanInfo.processingMethod') {
         schema = ProcessingMethodFieldSchema;
-        console.log('🏭 ProcessingMethod field isolated validation:', { cleanValue, schemaName: 'ProcessingMethodFieldSchema' });
       } else if (fieldPath === 'beanInfo.altitude') {
         schema = AltitudeFieldSchema;
       } else if (fieldPath === 'beanInfo.roastingDate') {
@@ -215,43 +207,17 @@ export const useRecipeValidation = () => {
       }
 
       if (!schema) {
-        console.log('⚠️ No schema found for field:', fieldPath);
         return { isValid: true };
       }
-
-      // DEBUG: Log schema validation attempt
-      console.log('🔬 About to validate with schema:', {
-        fieldPath,
-        schema: schema.constructor.name,
-        dataToValidate,
-        cleanValue
-      });
 
       // Individual field validation - validate only the specific field value
       const result = schema.safeParse(dataToValidate);
       
-      // DEBUG: Log schema validation result
-      console.log('🎯 Schema validation result:', {
-        fieldPath,
-        success: result.success,
-        dataToValidate,
-        result: result.success ? 'SUCCESS' : result.error
-      });
-      
       if (result.success) {
-        console.log('✅ Field validation passed for:', fieldPath);
         return { isValid: true };
       } else {
         // For individual field validation, use the direct error message
         const error = result.error.issues[0]?.message || 'Invalid value';
-        
-        // DEBUG: Log validation error details
-        console.error('💥 Individual field validation failed for', fieldPath, ':', {
-          error,
-          allIssues: result.error.issues,
-          dataToValidate
-        });
-        
         return { isValid: false, error };
       }
     } catch (error) {
@@ -261,32 +227,7 @@ export const useRecipeValidation = () => {
 
   // Update validation state for a specific field
   const updateFieldValidation = useCallback((fieldPath: string, value: any, formData: any) => {
-    // DEBUG: Log validation calls
-    console.log('🔍 updateFieldValidation called:', { fieldPath, value, type: typeof value });
-    
-    // DEBUG: Special logging for origin field validation
-    if (fieldPath === 'beanInfo.origin') {
-      console.log('🌍 Validating origin field:', { 
-        value, 
-        formDataBeanInfo: formData?.beanInfo,
-        originValue: formData?.beanInfo?.origin
-      });
-    }
-    
     const result = validateField(fieldPath, value, formData);
-    
-    // DEBUG: Log validation result
-    console.log('📊 Validation result for', fieldPath, ':', result);
-    
-    // DEBUG: Special logging for origin validation result
-    if (fieldPath === 'beanInfo.origin' && !result.isValid) {
-      console.error('❌ Origin validation failed:', { 
-        fieldPath, 
-        value, 
-        error: result.error,
-        formData: formData?.beanInfo 
-      });
-    }
     
     setValidationState(prev => {
       const newState = { ...prev };

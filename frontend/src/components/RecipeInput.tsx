@@ -280,19 +280,6 @@ export default function RecipeInput({
 
   // Update form data with validation
   const updateFormData = (path: string, value: any, shouldValidate = false) => {
-    // DEBUG: Log all form data updates
-    console.log('🔄 updateFormData called:', { path, value, shouldValidate });
-    
-    // DEBUG: Special logging for origin field
-    if (path === 'beanInfo.origin') {
-      console.log('🌍 Origin field update:', { value, type: typeof value });
-    }
-    
-    // DEBUG: Special logging for roastingDate field  
-    if (path === 'beanInfo.roastingDate') {
-      console.log('📅 RoastingDate field update:', { value, type: typeof value });
-    }
-    
     const newFormData = { ...formData };
     const keys = path.split('.');
     let current: any = newFormData;
@@ -313,20 +300,10 @@ export default function RecipeInput({
       current[finalKey] = value;
     }
     
-    // DEBUG: Log the updated form data structure
-    console.log('📋 Form data after update:', {
-      origin: newFormData?.beanInfo?.origin,
-      roastingDate: newFormData?.beanInfo?.roastingDate,
-      path,
-      finalKey,
-      currentValue: current?.[finalKey]
-    });
-    
     setFormData(newFormData);
     
     // Validate field if requested or if form has been submitted
     if (shouldValidate || hasAttemptedSubmit) {
-      console.log('✅ Calling validation for path:', path);
       updateFieldValidation(path, value, newFormData);
     }
     
@@ -338,14 +315,6 @@ export default function RecipeInput({
 
   // Handle field blur events for validation
   const handleFieldBlur = (path: string, value: any) => {
-    // DEBUG: Log field blur events
-    console.log('🎯 handleFieldBlur called:', { path, value, type: typeof value });
-    
-    // DEBUG: Special logging for origin field blur
-    if (path === 'beanInfo.origin') {
-      console.log('🌍 Origin field blur - validating:', { value, formDataOrigin: formData?.beanInfo?.origin });
-    }
-    
     updateFieldValidation(path, value, formData);
   };
 
