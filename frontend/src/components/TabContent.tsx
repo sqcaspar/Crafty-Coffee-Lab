@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ActiveTab } from '../App';
+import Home from './Home';
 import RecipeInput from './RecipeInput';
 import RecipeList from './RecipeList';
 import RecipeDetail from './RecipeDetail';
@@ -48,6 +49,16 @@ export default function TabContent({ activeTab, onTabChange }: TabContentProps) 
 
   return (
     <div className="w-full">
+      {/* Home Tab */}
+      <div
+        id="home-panel"
+        role="tabpanel"
+        aria-labelledby="home-tab"
+        className={activeTab === 'home' ? 'block' : 'hidden'}
+      >
+        <Home onGetStarted={() => onTabChange('input')} />
+      </div>
+
       {/* Input Tab */}
       <div
         id="input-panel"

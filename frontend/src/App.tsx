@@ -6,33 +6,33 @@ import Navigation from './components/Navigation';
 import TabContent from './components/TabContent';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 
-export type ActiveTab = 'input' | 'recipes' | 'collections' | 'favorites';
+export type ActiveTab = 'home' | 'input' | 'recipes' | 'collections' | 'favorites';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('input');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('home');
 
   // Setup tab navigation keyboard shortcuts
   useKeyboardShortcuts({
     shortcuts: [
       {
         key: '1',
-        callback: () => handleTabChange('input'),
-        description: 'Go to Recipe Input tab'
+        callback: () => handleTabChange('home'),
+        description: 'Go to Home tab'
       },
       {
         key: '2',
-        callback: () => handleTabChange('recipes'),
-        description: 'Go to Recipes tab'
+        callback: () => handleTabChange('input'),
+        description: 'Go to Brew Journal tab'
       },
       {
         key: '3',
-        callback: () => handleTabChange('favorites'),
-        description: 'Go to Favorites tab'
+        callback: () => handleTabChange('recipes'),
+        description: 'Go to My Brews tab'
       },
       {
         key: '4',
-        callback: () => handleTabChange('collections'),
-        description: 'Go to Collections tab'
+        callback: () => handleTabChange('favorites'),
+        description: 'Go to Top Picks tab'
       }
     ]
   });
@@ -41,7 +41,7 @@ function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '') as ActiveTab;
-      if (['input', 'recipes', 'collections', 'favorites'].includes(hash)) {
+      if (['home', 'input', 'recipes', 'collections', 'favorites'].includes(hash)) {
         setActiveTab(hash);
       }
     };
@@ -65,7 +65,7 @@ function App() {
   // Restore tab from localStorage on mount
   useEffect(() => {
     const savedTab = localStorage.getItem('coffeeTracker_activeTab') as ActiveTab;
-    if (savedTab && ['input', 'recipes', 'collections', 'favorites'].includes(savedTab)) {
+    if (savedTab && ['home', 'input', 'recipes', 'collections', 'favorites'].includes(savedTab)) {
       setActiveTab(savedTab);
       window.location.hash = savedTab;
     }

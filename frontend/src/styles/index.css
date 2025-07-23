@@ -2,65 +2,141 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import monochrome design system */
+@import './design-system.css';
+
 @layer base {
+  /* Inter font with optimized loading */
+  @font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+  }
+  
   html {
     font-family: 'Inter', system-ui, sans-serif;
+    @apply scroll-smooth;
+    /* Enable font features for better typography */
+    font-feature-settings: 'rlig' 1, 'calt' 1, 'kern' 1, 'liga' 1;
+    font-variant-numeric: tabular-nums;
   }
   
   body {
-    @apply text-gray-900 bg-gray-50;
-    font-feature-settings: 'rlig' 1, 'calt' 1;
+    /* Monochrome base styling */
+    @apply bg-mono-white text-mono-800;
+    @apply antialiased leading-relaxed;
+    /* High contrast for accessibility */
+    color-contrast: high;
+    text-size-adjust: 100%;
+  }
+  
+  /* Smooth focus transitions */
+  *:focus {
+    @apply transition-all duration-200;
+  }
+  
+  /* Optimize image rendering */
+  img {
+    @apply max-w-full h-auto;
+    image-rendering: optimizeQuality;
   }
 }
 
+/* Legacy component classes for backwards compatibility during transition */
 @layer components {
+  /* Updated legacy button styles to use monochrome */
   .btn {
-    @apply px-4 py-2 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors;
+    @apply btn-mono;
   }
   
   .btn-primary {
-    @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
+    @apply btn-mono-primary;
   }
   
   .btn-secondary {
-    @apply bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500;
+    @apply btn-mono-secondary;
   }
   
+  /* Updated legacy input styles */
   .input {
-    @apply px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500;
+    @apply input-mono;
   }
   
+  /* Updated legacy card styles */
   .card {
-    @apply bg-white rounded-lg shadow border border-gray-200;
+    @apply card-mono;
+  }
+  
+  /* Dark mode overrides (if needed) */
+  .dark .btn-mono-primary {
+    @apply bg-mono-white text-mono-900 hover:bg-mono-100;
+  }
+  
+  .dark .btn-mono-secondary {
+    @apply bg-mono-800 text-mono-white hover:bg-mono-700;
+  }
+  
+  .dark .card-mono {
+    @apply bg-mono-800 border-mono-700 text-mono-100;
   }
 }
 
+/* Enhanced utilities */
 @layer utilities {
+  /* Legacy animation classes for backwards compatibility */
   .animation-fade-in {
-    animation: fadeIn 0.5s ease-in-out;
+    @apply animate-fade-in;
   }
   
   .animation-slide-up {
-    animation: slideUp 0.3s ease-out;
+    @apply animate-slide-up;
   }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
+  
+  /* New monochrome-specific utilities */
+  .text-mono-contrast {
+    @apply text-mono-900;
+    /* Ensure WCAG AA compliance */
+    color-contrast: 4.5;
   }
-  to {
-    opacity: 1;
+  
+  .bg-mono-subtle {
+    @apply bg-stone-50;
   }
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(10px);
-    opacity: 0;
+  
+  /* Responsive text sizing */
+  .text-responsive {
+    @apply text-body-sm md:text-body lg:text-body-lg;
   }
-  to {
-    transform: translateY(0);
-    opacity: 1;
+  
+  /* Interactive states */
+  .interactive {
+    @apply transition-all duration-200 cursor-pointer;
+    @apply hover:scale-105 active:scale-95;
+  }
+  
+  /* High contrast mode utilities */
+  @media (prefers-contrast: high) {
+    .contrast-border {
+      @apply border-2 border-mono-900;
+    }
+    
+    .contrast-text {
+      @apply text-mono-900;
+    }
+  }
+  
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-hover-lift,
+    .animate-hover-depress,
+    .animate-scale-up,
+    .animate-accordion-open,
+    .animate-accordion-close,
+    .animate-tab-transition {
+      @apply transition-none;
+      animation: none;
+    }
   }
 }

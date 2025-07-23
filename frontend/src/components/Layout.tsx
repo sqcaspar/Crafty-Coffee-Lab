@@ -46,68 +46,53 @@ export default function Layout({ children, onDataRefresh }: LayoutProps) {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 transition-colors duration-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white py-4">
-              Coffee Brewing Recipe Tracker
-            </h1>
-            <div className="flex items-center space-x-4">
-              {/* Keyboard Shortcuts Button */}
-              <button
-                onClick={() => setShowShortcutsModal(true)}
-                className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                title="Keyboard Shortcuts (Ctrl+/ or F1)"
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
-                </svg>
-                Help
-              </button>
-
-              {/* Backup Button */}
-              <button
-                onClick={() => setShowBackupModal(true)}
-                className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                title="Backup & Restore (Ctrl+B)"
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
-                </svg>
-                Backup
-              </button>
-              
-              {/* Theme Toggle */}
-              <ThemeToggle />
-              
-              {/* Connection Status */}
-              <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span>Connected</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="min-h-screen bg-mono-white dark:bg-mono-800 transition-colors duration-200">
+      {/* Main Content - with top padding for fixed navigation */}
+      <main className="pt-24 min-h-screen">
         {children}
       </main>
+      
+      {/* Floating Action Buttons - positioned in bottom right */}
+      <div className="fixed bottom-6 right-6 z-30 flex flex-col space-y-3">
+        {/* Keyboard Shortcuts Button */}
+        <button
+          onClick={() => setShowShortcutsModal(true)}
+          className="btn-mono-secondary w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:animate-hover-lift focus-mono"
+          title="Keyboard Shortcuts (Ctrl+/ or F1)"
+        >
+          <svg className="icon-mono" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </button>
+
+        {/* Backup Button */}
+        <button
+          onClick={() => setShowBackupModal(true)}
+          className="btn-mono-secondary w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:animate-hover-lift focus-mono"
+          title="Backup & Restore (Ctrl+B)"
+        >
+          <svg className="icon-mono" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+          </svg>
+        </button>
+        
+        {/* Theme Toggle */}
+        <div className="flex items-center justify-center">
+          <ThemeToggle />
+        </div>
+      </div>
 
       {/* Footer */}
-      <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12 transition-colors duration-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+      <footer className="bg-mono-white dark:bg-mono-800 border-t border-mono-200 dark:border-mono-700 mt-section transition-colors duration-200">
+        <div className="container-mono py-6">
+          <div className="flex items-center justify-between text-body-sm text-mono-500">
             <div className="flex items-center space-x-4">
-              <span>Coffee Brewing Recipe Tracker v1.0</span>
-              <span>•</span>
-              <span>Step 16 - UX Enhancements</span>
+              <span className="font-medium text-mono-700">Coffee Recipe Tracker</span>
+              <span className="text-mono-300">•</span>
+              <span>Monochrome Edition</span>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-xs">Export features available in Recipe List</span>
+              <span className="text-caption">Powered by modern design</span>
             </div>
           </div>
         </div>
