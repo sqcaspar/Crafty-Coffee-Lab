@@ -37,6 +37,93 @@ export default function RecipeList({ onEditRecipe, onViewRecipe, refreshTrigger 
   
   const { showSuccess, showError } = useToast();
 
+  // Setup keyboard shortcuts for RecipeList
+  useKeyboardShortcuts({
+    shortcuts: [
+      {
+        key: 'f',
+        ctrlKey: true,
+        callback: () => {
+          // Focus the search input by dispatching a global focus event
+          const searchInput = document.querySelector('input[placeholder*="Search recipes"]') as HTMLInputElement;
+          searchInput?.focus();
+        },
+        description: 'Focus search input'
+      },
+      {
+        key: 'k',
+        ctrlKey: true,
+        callback: () => {
+          // Focus the search input by dispatching a global focus event
+          const searchInput = document.querySelector('input[placeholder*="Search recipes"]') as HTMLInputElement;
+          searchInput?.focus();
+        },
+        description: 'Focus search bar'
+      },
+      {
+        key: 'f',
+        ctrlKey: true,
+        shiftKey: true,
+        callback: () => {
+          setIsFilterPanelOpen(true);
+        },
+        description: 'Open advanced filters'
+      },
+      {
+        key: 'r',
+        ctrlKey: true,
+        shiftKey: true,
+        callback: () => {
+          filters.clearFilters();
+          const searchInput = document.querySelector('input[placeholder*="Search recipes"]') as HTMLInputElement;
+          if (searchInput) {
+            searchInput.value = '';
+            searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        },
+        description: 'Clear all filters'
+      },
+      {
+        key: 'e',
+        ctrlKey: true,
+        callback: () => {
+          setIsExportModalOpen(true);
+        },
+        description: 'Export current view'
+      },
+      {
+        key: 'a',
+        ctrlKey: true,
+        callback: (e) => {
+          e.preventDefault();
+          const allRecipeIds = new Set(searchResults.map(r => r.recipeId));
+          setSelectedRecipes(allRecipeIds);
+        },
+        description: 'Select all recipes'
+      },
+      {
+        key: 'd',
+        ctrlKey: true,
+        callback: (e) => {
+          e.preventDefault();
+          setSelectedRecipes(new Set());
+        },
+        description: 'Deselect all recipes'
+      },
+      {
+        key: 'c',
+        ctrlKey: true,
+        shiftKey: true,
+        callback: () => {
+          if (selectedRecipes.size >= 2) {
+            setIsComparisonModalOpen(true);
+          }
+        },
+        description: 'Compare selected recipes'
+      }
+    ]
+  });
+
   // Initialize filtering functionality
   const filters = useFilters({
     recipes,

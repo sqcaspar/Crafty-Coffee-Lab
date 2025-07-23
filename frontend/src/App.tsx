@@ -4,11 +4,38 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import Layout from './components/Layout';
 import Navigation from './components/Navigation';
 import TabContent from './components/TabContent';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 
 export type ActiveTab = 'input' | 'recipes' | 'collections' | 'favorites';
 
 function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('input');
+
+  // Setup tab navigation keyboard shortcuts
+  useKeyboardShortcuts({
+    shortcuts: [
+      {
+        key: '1',
+        callback: () => handleTabChange('input'),
+        description: 'Go to Recipe Input tab'
+      },
+      {
+        key: '2',
+        callback: () => handleTabChange('recipes'),
+        description: 'Go to Recipes tab'
+      },
+      {
+        key: '3',
+        callback: () => handleTabChange('favorites'),
+        description: 'Go to Favorites tab'
+      },
+      {
+        key: '4',
+        callback: () => handleTabChange('collections'),
+        description: 'Go to Collections tab'
+      }
+    ]
+  });
 
   // Handle URL hash navigation
   useEffect(() => {
@@ -47,7 +74,10 @@ function App() {
   return (
     <ThemeProvider>
       <ToastProvider>
-        <Layout>
+        <Layout onDataRefresh={() => {
+          // Force re-render of components that might need to refresh after restore
+          window.location.reload();
+        }}>
           <Navigation 
             activeTab={activeTab} 
             onTabChange={handleTabChange} 
