@@ -5,7 +5,32 @@ import {
   BeanInfoSchema, 
   BrewingParametersSchema, 
   MeasurementsInputSchema, 
-  SensationRecordSchema 
+  SensationRecordSchema,
+  // Individual field schemas for isolated validation
+  OriginFieldSchema,
+  ProcessingMethodFieldSchema,
+  AltitudeFieldSchema,
+  RoastingDateFieldSchema,
+  RoastingLevelFieldSchema,
+  WaterTemperatureFieldSchema,
+  BrewingMethodFieldSchema,
+  GrinderModelFieldSchema,
+  GrinderUnitFieldSchema,
+  FilteringToolsFieldSchema,
+  TurbulenceFieldSchema,
+  AdditionalNotesFieldSchema,
+  CoffeeBeansFieldSchema,
+  WaterFieldSchema,
+  TdsFieldSchema,
+  ExtractionYieldFieldSchema,
+  OverallImpressionFieldSchema,
+  AcidityFieldSchema,
+  BodyFieldSchema,
+  SweetnessFieldSchema,
+  FlavorFieldSchema,
+  AftertasteFieldSchema,
+  BalanceFieldSchema,
+  TastingNotesFieldSchema
 } from '../../../shared/src/validation/recipeSchema';
 
 // Individual field validation result
@@ -120,57 +145,67 @@ export const useRecipeValidation = () => {
       // DEBUG: Log cleaned value
       console.log('🧹 Cleaned value:', { cleanValue, originalValue: value });
       
-      // Determine which schema to use based on field path
+      // Use individual field schemas for isolated validation
       let schema;
-      let dataToValidate;
+      let dataToValidate = cleanValue;
       
-      if (fieldPath.startsWith('beanInfo.')) {
-        const fieldName = fieldPath.split('.')[1];
-        schema = BeanInfoSchema;
-        dataToValidate = { ...formData.beanInfo };
-        if (fieldName) {
-          dataToValidate[fieldName] = cleanValue;
-        }
-        
-        // DEBUG: Log beanInfo validation setup
-        console.log('🫘 BeanInfo validation setup:', { 
-          fieldName, 
-          cleanValue, 
-          dataToValidate,
-          originalBeanInfo: formData.beanInfo
-        });
-        
-        // DEBUG: Special case for origin field
-        if (fieldName === 'origin') {
-          console.log('🌍 Origin field validation details:', {
-            fieldPath,
-            fieldName,
-            cleanValue,
-            dataToValidate,
-            schemaName: 'BeanInfoSchema'
-          });
-        }
-      } else if (fieldPath.startsWith('brewingParameters.')) {
-        const fieldName = fieldPath.split('.')[1];
-        schema = BrewingParametersSchema;
-        dataToValidate = { ...formData.brewingParameters };
-        if (fieldName) {
-          dataToValidate[fieldName] = cleanValue;
-        }
-      } else if (fieldPath.startsWith('measurements.')) {
-        const fieldName = fieldPath.split('.')[1];
-        schema = MeasurementsInputSchema;
-        dataToValidate = { ...formData.measurements };
-        if (fieldName) {
-          dataToValidate[fieldName] = cleanValue;
-        }
-      } else if (fieldPath.startsWith('sensationRecord.')) {
-        const fieldName = fieldPath.split('.')[1];
-        schema = SensationRecordSchema;
-        dataToValidate = { ...formData.sensationRecord };
-        if (fieldName) {
-          dataToValidate[fieldName] = cleanValue;
-        }
+      // BeanInfo field validation
+      if (fieldPath === 'beanInfo.origin') {
+        schema = OriginFieldSchema;
+        console.log('🌍 Origin field isolated validation:', { cleanValue, schemaName: 'OriginFieldSchema' });
+      } else if (fieldPath === 'beanInfo.processingMethod') {
+        schema = ProcessingMethodFieldSchema;
+        console.log('🏭 ProcessingMethod field isolated validation:', { cleanValue, schemaName: 'ProcessingMethodFieldSchema' });
+      } else if (fieldPath === 'beanInfo.altitude') {
+        schema = AltitudeFieldSchema;
+      } else if (fieldPath === 'beanInfo.roastingDate') {
+        schema = RoastingDateFieldSchema;
+      } else if (fieldPath === 'beanInfo.roastingLevel') {
+        schema = RoastingLevelFieldSchema;
+      }
+      // BrewingParameters field validation
+      else if (fieldPath === 'brewingParameters.waterTemperature') {
+        schema = WaterTemperatureFieldSchema;
+      } else if (fieldPath === 'brewingParameters.brewingMethod') {
+        schema = BrewingMethodFieldSchema;
+      } else if (fieldPath === 'brewingParameters.grinderModel') {
+        schema = GrinderModelFieldSchema;
+      } else if (fieldPath === 'brewingParameters.grinderUnit') {
+        schema = GrinderUnitFieldSchema;
+      } else if (fieldPath === 'brewingParameters.filteringTools') {
+        schema = FilteringToolsFieldSchema;
+      } else if (fieldPath === 'brewingParameters.turbulence') {
+        schema = TurbulenceFieldSchema;
+      } else if (fieldPath === 'brewingParameters.additionalNotes') {
+        schema = AdditionalNotesFieldSchema;
+      }
+      // Measurements field validation
+      else if (fieldPath === 'measurements.coffeeBeans') {
+        schema = CoffeeBeansFieldSchema;
+      } else if (fieldPath === 'measurements.water') {
+        schema = WaterFieldSchema;
+      } else if (fieldPath === 'measurements.tds') {
+        schema = TdsFieldSchema;
+      } else if (fieldPath === 'measurements.extractionYield') {
+        schema = ExtractionYieldFieldSchema;
+      }
+      // SensationRecord field validation
+      else if (fieldPath === 'sensationRecord.overallImpression') {
+        schema = OverallImpressionFieldSchema;
+      } else if (fieldPath === 'sensationRecord.acidity') {
+        schema = AcidityFieldSchema;
+      } else if (fieldPath === 'sensationRecord.body') {
+        schema = BodyFieldSchema;
+      } else if (fieldPath === 'sensationRecord.sweetness') {
+        schema = SweetnessFieldSchema;
+      } else if (fieldPath === 'sensationRecord.flavor') {
+        schema = FlavorFieldSchema;
+      } else if (fieldPath === 'sensationRecord.aftertaste') {
+        schema = AftertasteFieldSchema;
+      } else if (fieldPath === 'sensationRecord.balance') {
+        schema = BalanceFieldSchema;
+      } else if (fieldPath === 'sensationRecord.tastingNotes') {
+        schema = TastingNotesFieldSchema;
       } else if (fieldPath === 'recipeName') {
         // Recipe name is optional, just check length
         if (cleanValue && typeof cleanValue === 'string' && cleanValue.length > 200) {
@@ -192,7 +227,7 @@ export const useRecipeValidation = () => {
         cleanValue
       });
 
-      // Partial validation - only validate if field has a value or is required
+      // Individual field validation - validate only the specific field value
       const result = schema.safeParse(dataToValidate);
       
       // DEBUG: Log schema validation result
@@ -204,20 +239,20 @@ export const useRecipeValidation = () => {
       });
       
       if (result.success) {
+        console.log('✅ Field validation passed for:', fieldPath);
         return { isValid: true };
       } else {
-        const fieldName = fieldPath.split('.').pop();
-        const error = getFieldError(result.error, fieldName || '');
+        // For individual field validation, use the direct error message
+        const error = result.error.issues[0]?.message || 'Invalid value';
         
         // DEBUG: Log validation error details
-        console.error('💥 Validation failed for', fieldPath, ':', {
-          fieldName,
+        console.error('💥 Individual field validation failed for', fieldPath, ':', {
           error,
           allIssues: result.error.issues,
           dataToValidate
         });
         
-        return { isValid: false, error: error || result.error.issues[0]?.message || 'Invalid value' };
+        return { isValid: false, error };
       }
     } catch (error) {
       return { isValid: false, error: 'Validation error' };
