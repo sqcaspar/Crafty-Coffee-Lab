@@ -1,5 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { BeanInfo, BrewingParameters, MeasurementsInput, SensationRecord, RoastingLevel, BrewingMethod } from '../../../shared/src/types/recipe';
+import { BeanInfo, BrewingParameters, MeasurementsInput, SensationRecord, RoastingLevel, BrewingMethod, TurbulenceStep } from '../../../shared/src/types/recipe';
+import { COFFEE_ORIGIN_GROUPS, CoffeeOrigin } from '../../../shared/src/constants/coffeeOrigins';
+import { PROCESSING_METHOD_OPTIONS, ProcessingMethod } from '../../../shared/src/constants/processingMethods';
+import { WATER_TEMPERATURE_OPTIONS, parseTemperature } from '../../../shared/src/constants/waterTemperature';
+import { GRINDER_MODEL_OPTIONS, OTHERS_VALUE } from '../../../shared/src/constants/grinderModels';
+import { GRINDER_SETTING_OPTIONS } from '../../../shared/src/constants/grinderSettings';
+import { FILTERING_TOOL_OPTIONS } from '../../../shared/src/constants/filteringTools';
 import { useRecipeValidation } from '../hooks/useRecipeValidation';
 import { useFormDirtyState } from '../hooks/useFormDirtyState';
 import { useKeyboardShortcuts, COMMON_SHORTCUTS } from '../hooks/useKeyboardShortcuts';
@@ -9,10 +15,13 @@ import { transformRecipeInput } from '../../../shared/src/validation/recipeSchem
 import TextInput from './forms/TextInput';
 import NumberInput from './forms/NumberInput';
 import Select from './forms/Select';
+import GroupedSelect from './forms/GroupedSelect';
+import SelectWithCustom from './forms/SelectWithCustom';
 import RatingSlider from './forms/RatingSlider';
 import TextArea from './forms/TextArea';
 import ValidationSummary from './forms/ValidationSummary';
-import TastingNotesPanel, { TastingNotesData } from './ui/TastingNotesPanel';
+import { TurbulenceSteps } from './forms/TurbulenceSteps';
+import TabbedEvaluationPanel, { TastingNotesData } from './ui/TabbedEvaluationPanel';
 import LoadingSpinner from './ui/LoadingSpinner';
 import UnsavedChangesModal from './UnsavedChangesModal';
 
@@ -50,6 +59,21 @@ const brewingMethodOptions = [
   { value: BrewingMethod.COLD_BREW, label: 'Cold Brew' }
 ];
 
+// Coffee origin groups for grouped select
+const coffeeOriginGroups = COFFEE_ORIGIN_GROUPS.map(group => ({
+  label: group.continent,
+  options: group.countries.map(country => ({
+    value: country,
+    label: country
+  }))
+}));
+
+// Processing method options for select
+const processingMethodOptions = PROCESSING_METHOD_OPTIONS.map(option => ({
+  value: option.value,
+  label: option.label
+}));
+
 const initialFormData: FormData = {
   recipeName: '',
   isFavorite: false,
@@ -73,6 +97,7 @@ const initialFormData: FormData = {
   measurements: {
     coffeeBeans: '' as any,
     water: '' as any,
+    brewedCoffeeWeight: undefined,
     tds: undefined,
     extractionYield: undefined
   },
@@ -90,6 +115,38 @@ const initialFormData: FormData = {
 
 const DRAFT_KEY = 'coffeeTracker_recipeDraft';
 
+// Helper functions for turbulence data conversion
+const convertTurbulenceToSteps = (turbulence?: string | TurbulenceStep[]): TurbulenceStep[] => {
+  if (!turbulence) {
+    return [{ actionTime: '0:00', actionDetails: '', volume: '' }];
+  }
+  
+  if (Array.isArray(turbulence)) {
+    return turbulence.length > 0 ? turbulence : [{ actionTime: '0:00', actionDetails: '', volume: '' }];
+  }
+  
+  // Convert legacy string to single step
+  return [{ actionTime: '0:00', actionDetails: turbulence, volume: '' }];
+};
+
+const convertStepsToTurbulence = (steps: TurbulenceStep[]): TurbulenceStep[] => {
+  return steps.filter(step => 
+    step.actionTime.trim() !== '' || 
+    step.actionDetails.trim() !== '' || 
+    step.volume.trim() !== ''
+  );
+};
+
+// SCA Extraction Yield calculation function
+const calculateExtractionYield = (brewedWeight: number, tds: number, coffeeWeight: number): number => {
+  if (!brewedWeight || !tds || !coffeeWeight || brewedWeight <= 0 || tds <= 0 || coffeeWeight <= 0) {
+    return 0;
+  }
+  // SCA Formula: Extraction Yield (%) = (Brewed Coffee Weight (g) × TDS (%)) / Coffee Beans (g)
+  const extractionYield = (brewedWeight * tds) / coffeeWeight;
+  return Math.round(extractionYield * 100) / 100; // Round to 2 decimal places
+};
+
 export default function RecipeInput({ 
   mode = 'create', 
   recipeId, 
@@ -106,6 +163,7 @@ export default function RecipeInput({
   const [loadingMessage, setLoadingMessage] = useState('');
   const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false);
   const [lastModified, setLastModified] = useState<string | null>(null);
+  const [turbulenceSteps, setTurbulenceSteps] = useState<TurbulenceStep[]>([{ actionTime: '0:00', actionDetails: '', volume: '' }]);
   
   // Initialize validation hook
   const { 
@@ -173,6 +231,7 @@ export default function RecipeInput({
               measurements: {
                 coffeeBeans: recipe.measurements.coffeeBeans,
                 water: recipe.measurements.water,
+                brewedCoffeeWeight: recipe.measurements.brewedCoffeeWeight,
                 tds: recipe.measurements.tds,
                 extractionYield: recipe.measurements.extractionYield,
               },
@@ -277,6 +336,23 @@ export default function RecipeInput({
       setCoffeeWaterRatio('');
     }
   }, [formData.measurements.coffeeBeans, formData.measurements.water]);
+
+  // Sync turbulence steps when formData changes (for edit mode)
+  useEffect(() => {
+    const steps = convertTurbulenceToSteps(formData.brewingParameters.turbulence);
+    setTurbulenceSteps(steps);
+  }, [formData.brewingParameters.turbulence]);
+
+  // Auto-calculate extraction yield using SCA formula
+  useEffect(() => {
+    const { brewedCoffeeWeight, tds, coffeeBeans } = formData.measurements;
+    if (typeof brewedCoffeeWeight === 'number' && typeof tds === 'number' && typeof coffeeBeans === 'number') {
+      const calculatedYield = calculateExtractionYield(brewedCoffeeWeight, tds, coffeeBeans);
+      if (calculatedYield > 0 && calculatedYield !== formData.measurements.extractionYield) {
+        updateFormData('measurements.extractionYield', calculatedYield);
+      }
+    }
+  }, [formData.measurements.brewedCoffeeWeight, formData.measurements.tds, formData.measurements.coffeeBeans]);
 
   // Update form data with validation
   const updateFormData = (path: string, value: any, shouldValidate = false) => {
@@ -659,23 +735,24 @@ export default function RecipeInput({
                 <div className="p-6 bg-mono-white border-t border-mono-200">
                   {panel.id === 'basic' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      <TextInput
+                      <GroupedSelect
                         id="origin"
                         label="Origin"
                         value={formData.beanInfo.origin}
                         onChange={(value) => updateFormData('beanInfo.origin', value)}
                         onBlur={(value) => handleFieldBlur('beanInfo.origin', value)}
-                        placeholder="e.g., Ethiopia, Colombia, Guatemala"
+                        groups={coffeeOriginGroups}
+                        placeholder="Select coffee origin country..."
                         required
                         error={getFieldValidation('beanInfo.origin').error}
                       />
-                      <TextInput
+                      <Select
                         id="processingMethod"
                         label="Processing Method"
                         value={formData.beanInfo.processingMethod}
                         onChange={(value) => updateFormData('beanInfo.processingMethod', value)}
-                        onBlur={(value) => handleFieldBlur('beanInfo.processingMethod', value)}
-                        placeholder="e.g., Washed, Natural, Honey"
+                        options={processingMethodOptions}
+                        placeholder="Select processing method..."
                         required
                         error={getFieldValidation('beanInfo.processingMethod').error}
                       />
@@ -715,15 +792,13 @@ export default function RecipeInput({
                   {panel.id === 'brewing' && (
                     <>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <NumberInput
+                        <Select
                           id="waterTemperature"
                           label="Water Temperature"
-                          value={formData.brewingParameters.waterTemperature || ''}
-                          onChange={(value) => updateFormData('brewingParameters.waterTemperature', value === '' ? undefined : value)}
-                          unit="°C"
-                          placeholder="e.g., 93"
-                          min={60}
-                          max={100}
+                          value={formData.brewingParameters.waterTemperature?.toString() || ''}
+                          onChange={(value) => updateFormData('brewingParameters.waterTemperature', parseTemperature(value))}
+                          options={WATER_TEMPERATURE_OPTIONS}
+                          placeholder="Select temperature..."
                         />
                         <Select
                           id="brewingMethod"
@@ -733,39 +808,46 @@ export default function RecipeInput({
                           options={brewingMethodOptions}
                           placeholder="Select brewing method"
                         />
-                        <TextInput
+                        <SelectWithCustom
                           id="grinderModel"
                           label="Grinder Model"
                           value={formData.brewingParameters.grinderModel}
                           onChange={(value) => updateFormData('brewingParameters.grinderModel', value)}
                           onBlur={(value) => handleFieldBlur('brewingParameters.grinderModel', value)}
-                          placeholder="e.g., Baratza Encore"
+                          options={GRINDER_MODEL_OPTIONS}
+                          othersValue={OTHERS_VALUE}
+                          placeholder="Select grinder model..."
+                          customPlaceholder="Enter custom grinder model..."
+                          customLabel="Custom Grinder Model"
                           required
                           error={getFieldValidation('brewingParameters.grinderModel').error}
                         />
-                        <TextInput
+                        <Select
                           id="grinderUnit"
                           label="Grinder Setting"
                           value={formData.brewingParameters.grinderUnit}
                           onChange={(value) => updateFormData('brewingParameters.grinderUnit', value)}
-                          onBlur={(value) => handleFieldBlur('brewingParameters.grinderUnit', value)}
-                          placeholder="e.g., Medium-coarse, Setting 20"
+                          options={GRINDER_SETTING_OPTIONS}
+                          placeholder="Select grinder setting..."
                           required
                           error={getFieldValidation('brewingParameters.grinderUnit').error}
                         />
-                        <TextInput
+                        <Select
                           id="filteringTools"
                           label="Filtering Tools"
                           value={formData.brewingParameters.filteringTools || ''}
                           onChange={(value) => updateFormData('brewingParameters.filteringTools', value || undefined)}
-                          placeholder="e.g., V60 filters, Metal mesh"
+                          options={FILTERING_TOOL_OPTIONS}
+                          placeholder="Select filter type..."
                         />
-                        <TextInput
-                          id="turbulence"
-                          label="Turbulence"
-                          value={formData.brewingParameters.turbulence || ''}
-                          onChange={(value) => updateFormData('brewingParameters.turbulence', value || undefined)}
-                          placeholder="e.g., 3 stirs, gentle agitation"
+                        <TurbulenceSteps
+                          value={turbulenceSteps}
+                          onChange={(steps) => {
+                            setTurbulenceSteps(steps);
+                            const filteredSteps = convertStepsToTurbulence(steps);
+                            updateFormData('brewingParameters.turbulence', filteredSteps.length > 0 ? filteredSteps : undefined);
+                          }}
+                          error={getFieldValidation('brewingParameters.turbulence').error}
                         />
                       </div>
                       <div className="mt-6">
@@ -816,6 +898,19 @@ export default function RecipeInput({
                         </div>
                       </div>
                       <NumberInput
+                        id="brewedCoffeeWeight"
+                        label="Brewed Coffee Weight"
+                        value={formData.measurements.brewedCoffeeWeight || ''}
+                        onChange={(value) => updateFormData('measurements.brewedCoffeeWeight', value === '' ? undefined : value)}
+                        onBlur={(value) => handleFieldBlur('measurements.brewedCoffeeWeight', value === '' ? undefined : value)}
+                        unit="g"
+                        placeholder="e.g., 320"
+                        min={0}
+                        max={1000}
+                        step={0.1}
+                        error={getFieldValidation('measurements.brewedCoffeeWeight').error}
+                      />
+                      <NumberInput
                         id="tds"
                         label="TDS"
                         value={formData.measurements.tds || ''}
@@ -826,53 +921,35 @@ export default function RecipeInput({
                         max={5}
                         step={0.01}
                       />
-                      <NumberInput
-                        id="extractionYield"
-                        label="Extraction Yield"
-                        value={formData.measurements.extractionYield || ''}
-                        onChange={(value) => updateFormData('measurements.extractionYield', value === '' ? undefined : value)}
-                        unit="%"
-                        placeholder="e.g., 20"
-                        min={0}
-                        max={30}
-                        step={0.1}
-                      />
+                      <div>
+                        <NumberInput
+                          id="extractionYield"
+                          label="Extraction Yield"
+                          value={formData.measurements.extractionYield || ''}
+                          onChange={(value) => updateFormData('measurements.extractionYield', value === '' ? undefined : value)}
+                          unit="%"
+                          placeholder="e.g., 20"
+                          min={0}
+                          max={30}
+                          step={0.1}
+                        />
+                        {formData.measurements.brewedCoffeeWeight && formData.measurements.tds && formData.measurements.coffeeBeans && (
+                          <p className="text-xs text-gray-600 mt-1">
+                            Auto-calculated using SCA formula: (Brewed Weight × TDS) ÷ Coffee Beans
+                          </p>
+                        )}
+                      </div>
                     </div>
                   )}
 
                   {panel.id === 'tasting' && (
                     <>
-                      <TastingNotesPanel
-                        data={{
-                          overallImpression: formData.sensationRecord.overallImpression === '' ? undefined : formData.sensationRecord.overallImpression,
-                          acidity: formData.sensationRecord.acidity,
-                          body: formData.sensationRecord.body,
-                          sweetness: formData.sensationRecord.sweetness,
-                          flavor: formData.sensationRecord.flavor,
-                          aftertaste: formData.sensationRecord.aftertaste,
-                          balance: formData.sensationRecord.balance,
-                          tastingNotes: formData.sensationRecord.tastingNotes
+                      <TabbedEvaluationPanel
+                        value={formData.sensationRecord}
+                        onChange={(updatedSensationRecord) => {
+                          updateFormData('sensationRecord', updatedSensationRecord);
                         }}
-                        onChange={(data: TastingNotesData) => {
-                          // Update all sensation record fields at once
-                          updateFormData('sensationRecord', {
-                            overallImpression: data.overallImpression,
-                            acidity: data.acidity,
-                            body: data.body,
-                            sweetness: data.sweetness,
-                            flavor: data.flavor,
-                            aftertaste: data.aftertaste,
-                            balance: data.balance,
-                            tastingNotes: data.tastingNotes
-                          });
-                          
-                          // Trigger validation for required overall impression
-                          if (data.overallImpression !== undefined) {
-                            handleFieldBlur('sensationRecord.overallImpression', data.overallImpression);
-                          }
-                        }}
-                        disabled={isLoading}
-                        showPresets={!isLoading}
+                        onBlur={handleFieldBlur}
                       />
                       {getFieldValidation('sensationRecord.overallImpression').error && (
                         <div className="mt-4 p-4 bg-mono-100 border border-mono-300 rounded-lg">

@@ -7,18 +7,18 @@ interface CollectionRow {
   name: string;
   description: string | null;
   color: string;
-  is_private: number;
-  is_default: number;
+  is_private: boolean; // PostgreSQL stores boolean as boolean
+  is_default: boolean; // PostgreSQL stores boolean as boolean
   tags: string | null;
-  date_created: string;
-  date_modified: string;
+  date_created: Date;
+  date_modified: Date;
 }
 
 export class CollectionModel {
   // Convert database row to Collection interface
   private static async rowToCollection(row: CollectionRow): Promise<Collection> {
     // Get recipe IDs for this collection
-    const recipesSql = 'SELECT recipe_id FROM recipe_collections WHERE collection_id = ?';
+    const recipesSql = 'SELECT recipe_id FROM recipe_collections WHERE collection_id = $1';
     const recipeRows = await db.all<{ recipe_id: string }>(recipesSql, [row.collection_id]);
     
     // Calculate collection statistics
@@ -29,11 +29,11 @@ export class CollectionModel {
       name: row.name,
       description: row.description ?? undefined,
       color: row.color as CollectionColor,
-      isPrivate: Boolean(row.is_private),
-      isDefault: Boolean(row.is_default),
+      isPrivate: row.is_private,
+      isDefault: row.is_default,
       tags: row.tags ? JSON.parse(row.tags) : [],
-      dateCreated: row.date_created,
-      dateModified: row.date_modified,
+      dateCreated: row.date_created.toISOString(),
+      dateModified: row.date_modified.toISOString(),
       recipeIds: recipeRows.map(r => r.recipe_id),
       stats,
     };
@@ -45,14 +45,14 @@ export class CollectionModel {
       SELECT r.overall_impression, r.brewing_method, r.origin, r.date_created
       FROM recipes r
       INNER JOIN recipe_collections rc ON r.recipe_id = rc.recipe_id
-      WHERE rc.collection_id = ?
+      WHERE rc.collection_id = $1
     `;
     
     const recipes = await db.all<{
       overall_impression: number;
       brewing_method: string | null;
       origin: string;
-      date_created: string;
+      date_created: Date;
     }>(recipesSql, [collectionId]);
 
     const totalRecipes = recipes.length;
@@ -74,14 +74,14 @@ export class CollectionModel {
     const mostUsedBrewingMethod = this.getMostCommon(brewingMethods);
     const mostUsedOrigin = this.getMostCommon(origins);
     
-    const dates = recipes.map(r => r.date_created).sort();
+    const dates = recipes.map(r => r.date_created.toISOString()).sort();
     const dateRangeStart = dates[0];
     const dateRangeEnd = dates[dates.length - 1];
 
     // Get last activity date from recipe_collections table
-    const lastActivitySql = 'SELECT MAX(date_assigned) as last_activity FROM recipe_collections WHERE collection_id = ?';
-    const lastActivityRow = await db.get<{ last_activity: string }>(lastActivitySql, [collectionId]);
-    const lastActivityDate = lastActivityRow?.last_activity || new Date().toISOString();
+    const lastActivitySql = 'SELECT MAX(date_assigned) as last_activity FROM recipe_collections WHERE collection_id = $1';
+    const lastActivityRow = await db.get<{ last_activity: Date | null }>(lastActivitySql, [collectionId]);
+    const lastActivityDate = lastActivityRow?.last_activity?.toISOString() || new Date().toISOString();
 
     return {
       totalRecipes,
@@ -121,13 +121,13 @@ export class CollectionModel {
   // Create a new collection
   public static async create(input: CollectionInput): Promise<Collection> {
     const id = uuidv4();
-    const now = new Date().toISOString();
+    const now = new Date();
 
     const sql = `
       INSERT INTO collections (
         collection_id, name, description, color, is_private, is_default, 
         tags, date_created, date_modified
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     `;
     
     const params = [
@@ -135,8 +135,8 @@ export class CollectionModel {
       input.name.trim(),
       input.description?.trim() ?? null,
       input.color,
-      input.isPrivate ? 1 : 0,
-      input.isDefault ? 1 : 0,
+      input.isPrivate,
+      input.isDefault,
       JSON.stringify(input.tags || []),
       now,
       now
@@ -154,7 +154,7 @@ export class CollectionModel {
 
   // Find collection by ID
   public static async findById(id: string): Promise<Collection | null> {
-    const sql = 'SELECT * FROM collections WHERE collection_id = ?';
+    const sql = 'SELECT * FROM collections WHERE collection_id = $1';
     const row = await db.get<CollectionRow>(sql, [id]);
     
     if (!row) {
@@ -166,7 +166,7 @@ export class CollectionModel {
 
   // Find collection by name
   public static async findByName(name: string): Promise<Collection | null> {
-    const sql = 'SELECT * FROM collections WHERE name = ?';
+    const sql = 'SELECT * FROM collections WHERE name = $1';
     const row = await db.get<CollectionRow>(sql, [name.trim()]);
     
     if (!row) {
@@ -228,26 +228,26 @@ export class CollectionModel {
       return null;
     }
 
-    const now = new Date().toISOString();
+    const now = new Date();
     
     const sql = `
       UPDATE collections SET 
-        name = ?, 
-        description = ?, 
-        color = ?, 
-        is_private = ?, 
-        is_default = ?, 
-        tags = ?, 
-        date_modified = ?
-      WHERE collection_id = ?
+        name = $1, 
+        description = $2, 
+        color = $3, 
+        is_private = $4, 
+        is_default = $5, 
+        tags = $6, 
+        date_modified = $7
+      WHERE collection_id = $8
     `;
     
     const params = [
       updates.name?.trim() ?? existing.name,
       updates.description?.trim() ?? existing.description ?? null,
       updates.color ?? existing.color,
-      updates.isPrivate !== undefined ? (updates.isPrivate ? 1 : 0) : (existing.isPrivate ? 1 : 0),
-      updates.isDefault !== undefined ? (updates.isDefault ? 1 : 0) : (existing.isDefault ? 1 : 0),
+      updates.isPrivate !== undefined ? updates.isPrivate : existing.isPrivate,
+      updates.isDefault !== undefined ? updates.isDefault : existing.isDefault,
       updates.tags !== undefined ? JSON.stringify(updates.tags) : JSON.stringify(existing.tags),
       now,
       id
@@ -260,16 +260,16 @@ export class CollectionModel {
   // Delete collection
   public static async delete(id: string): Promise<boolean> {
     // This will also delete associated recipe_collections due to CASCADE
-    const sql = 'DELETE FROM collections WHERE collection_id = ?';
+    const sql = 'DELETE FROM collections WHERE collection_id = $1';
     const result = await db.run(sql, [id]);
-    return result.changes! > 0;
+    return result.rowCount! > 0;
   }
 
   // Add recipe to collection
   public static async addRecipe(collectionId: string, recipeId: string): Promise<boolean> {
     try {
-      const now = new Date().toISOString();
-      const sql = 'INSERT INTO recipe_collections (collection_id, recipe_id, date_assigned) VALUES (?, ?, ?)';
+      const now = new Date();
+      const sql = 'INSERT INTO recipe_collections (collection_id, recipe_id, date_assigned) VALUES ($1, $2, $3)';
       await db.run(sql, [collectionId, recipeId, now]);
       return true;
     } catch (error) {
@@ -283,9 +283,9 @@ export class CollectionModel {
 
   // Remove recipe from collection
   public static async removeRecipe(collectionId: string, recipeId: string): Promise<boolean> {
-    const sql = 'DELETE FROM recipe_collections WHERE collection_id = ? AND recipe_id = ?';
+    const sql = 'DELETE FROM recipe_collections WHERE collection_id = $1 AND recipe_id = $2';
     const result = await db.run(sql, [collectionId, recipeId]);
-    return result.changes! > 0;
+    return result.rowCount! > 0;
   }
 
   // Batch add recipes to collection
@@ -335,7 +335,7 @@ export class CollectionModel {
     const sql = `
       SELECT c.* FROM collections c 
       INNER JOIN recipe_collections rc ON c.collection_id = rc.collection_id 
-      WHERE rc.recipe_id = ?
+      WHERE rc.recipe_id = $1
       ORDER BY c.name ASC
     `;
     const rows = await db.all<CollectionRow>(sql, [recipeId]);
@@ -351,11 +351,11 @@ export class CollectionModel {
 
   // Check if collection name exists
   public static async nameExists(name: string, excludeId?: string): Promise<boolean> {
-    let sql = 'SELECT COUNT(*) as count FROM collections WHERE name = ?';
+    let sql = 'SELECT COUNT(*) as count FROM collections WHERE name = $1';
     const params: string[] = [name.trim()];
     
     if (excludeId) {
-      sql += ' AND collection_id != ?';
+      sql += ' AND collection_id != $2';
       params.push(excludeId);
     }
     
@@ -372,7 +372,7 @@ export class CollectionModel {
 
   // Get recipe count for a collection
   public static async getRecipeCount(collectionId: string): Promise<number> {
-    const sql = 'SELECT COUNT(*) as count FROM recipe_collections WHERE collection_id = ?';
+    const sql = 'SELECT COUNT(*) as count FROM recipe_collections WHERE collection_id = $1';
     const result = await db.get<{ count: number }>(sql, [collectionId]);
     return result?.count ?? 0;
   }
@@ -414,17 +414,17 @@ export class CollectionModel {
 
     // Apply filters
     if (filters?.isPrivate !== undefined) {
-      sql += ' AND c.is_private = ?';
-      params.push(filters.isPrivate ? 1 : 0);
+      sql += ` AND c.is_private = $${params.length + 1}`;
+      params.push(filters.isPrivate);
     }
 
     if (filters?.color) {
-      sql += ' AND c.color = ?';
+      sql += ` AND c.color = $${params.length + 1}`;
       params.push(filters.color);
     }
 
     if (filters?.searchQuery) {
-      sql += ' AND (c.name LIKE ? OR c.description LIKE ?)';
+      sql += ` AND (c.name ILIKE $${params.length + 1} OR c.description ILIKE $${params.length + 2})`;
       const searchPattern = `%${filters.searchQuery}%`;
       params.push(searchPattern, searchPattern);
     }
@@ -455,11 +455,11 @@ export class CollectionModel {
       name: row.name,
       description: row.description ?? undefined,
       color: row.color as CollectionColor,
-      isPrivate: Boolean(row.is_private),
-      isDefault: Boolean(row.is_default),
+      isPrivate: row.is_private,
+      isDefault: row.is_default,
       tags: row.tags ? JSON.parse(row.tags) : [],
-      dateCreated: row.date_created,
-      dateModified: row.date_modified,
+      dateCreated: row.date_created.toISOString(),
+      dateModified: row.date_modified.toISOString(),
       recipeCount: row.recipe_count,
       averageRating: Math.round(row.average_rating * 100) / 100,
       lastActivityDate: row.last_activity,

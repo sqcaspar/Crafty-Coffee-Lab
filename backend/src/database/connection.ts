@@ -1,23 +1,13 @@
-import sqlite3 from 'sqlite3';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { Pool, PoolClient, QueryResult } from 'pg';
 
 // Database configuration
-const DB_PATH = process.env.NODE_ENV === 'test' 
-  ? ':memory:' 
-  : path.join(__dirname, '../../../data/recipes.db');
-
-// Enable verbose mode in development
-const sqlite = process.env.NODE_ENV === 'development' 
-  ? sqlite3.verbose() 
-  : sqlite3;
+const DATABASE_URL = process.env.DATABASE_URL || process.env.NODE_ENV === 'test' 
+  ? 'postgresql://test:test@localhost:5432/test_db'
+  : 'postgresql://localhost:5432/coffee_tracker';
 
 class DatabaseConnection {
   private static instance: DatabaseConnection;
-  private db: sqlite3.Database | null = null;
+  private pool: Pool | null = null;
 
   private constructor() {}
 
@@ -28,101 +18,89 @@ class DatabaseConnection {
     return DatabaseConnection.instance;
   }
 
-  public async connect(): Promise<sqlite3.Database> {
-    return new Promise(async (resolve, reject) => {
-      if (this.db) {
-        return resolve(this.db);
-      }
+  public async connect(): Promise<Pool> {
+    if (this.pool) {
+      return this.pool;
+    }
 
-      // Create data directory if it doesn't exist
-      if (DB_PATH !== ':memory:') {
-        const fs = await import('fs');
-        const dataDir = path.dirname(DB_PATH);
-        if (!fs.existsSync(dataDir)) {
-          fs.mkdirSync(dataDir, { recursive: true });
-        }
-      }
-
-      this.db = new sqlite.Database(DB_PATH, (err) => {
-        if (err) {
-          console.error('❌ Error opening database:', err.message);
-          reject(err);
-        } else {
-          console.log(`✅ Connected to SQLite database: ${DB_PATH === ':memory:' ? 'in-memory' : DB_PATH}`);
-          // Enable foreign key constraints
-          this.db!.run('PRAGMA foreign_keys = ON');
-          resolve(this.db!);
-        }
+    try {
+      this.pool = new Pool({
+        connectionString: DATABASE_URL,
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+        max: 20,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 2000,
       });
-    });
+
+      // Test the connection
+      const client = await this.pool.connect();
+      await client.query('SELECT NOW()');
+      client.release();
+
+      console.log('✅ Connected to PostgreSQL database');
+      return this.pool;
+    } catch (err) {
+      console.error('❌ Error connecting to database:', err);
+      throw err;
+    }
   }
 
   public async close(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!this.db) {
-        return resolve();
-      }
+    if (!this.pool) {
+      return;
+    }
 
-      this.db.close((err) => {
-        if (err) {
-          console.error('❌ Error closing database:', err.message);
-          reject(err);
-        } else {
-          console.log('✅ Database connection closed');
-          this.db = null;
-          resolve();
-        }
-      });
-    });
+    try {
+      await this.pool.end();
+      console.log('✅ Database connection pool closed');
+      this.pool = null;
+    } catch (err) {
+      console.error('❌ Error closing database pool:', err);
+      throw err;
+    }
   }
 
-  public getDatabase(): sqlite3.Database {
-    if (!this.db) {
+  public getPool(): Pool {
+    if (!this.pool) {
       throw new Error('Database not connected. Call connect() first.');
     }
-    return this.db;
+    return this.pool;
   }
 
-  // Utility method to run queries with promises
-  public async run(sql: string, params: any[] = []): Promise<sqlite3.RunResult> {
-    return new Promise((resolve, reject) => {
-      const db = this.getDatabase();
-      db.run(sql, params, function(err) {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(this);
-        }
-      });
-    });
+  // Utility method to run queries with promises (INSERT, UPDATE, DELETE)
+  public async run(sql: string, params: any[] = []): Promise<QueryResult> {
+    const pool = this.getPool();
+    try {
+      const result = await pool.query(sql, params);
+      return result;
+    } catch (err) {
+      console.error('❌ Database query error:', err);
+      throw err;
+    }
   }
 
   // Utility method to get single row
   public async get<T = any>(sql: string, params: any[] = []): Promise<T | undefined> {
-    return new Promise((resolve, reject) => {
-      const db = this.getDatabase();
-      db.get(sql, params, (err, row) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(row as T);
-        }
-      });
-    });
+    const pool = this.getPool();
+    try {
+      const result = await pool.query(sql, params);
+      return result.rows[0] as T;
+    } catch (err) {
+      console.error('❌ Database query error:', err);
+      throw err;
+    }
   }
 
   // Utility method to get all rows
   public async all<T = any>(sql: string, params: any[] = []): Promise<T[]> {
-    return new Promise((resolve, reject) => {
-      const db = this.getDatabase();
-      db.all(sql, params, (err, rows) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(rows as T[]);
-        }
-      });
-    });
+    const pool = this.getPool();
+    try {
+      const result = await pool.query(sql, params);
+      return result.rows as T[];
+    } catch (err) {
+      console.error('❌ Database query error:', err);
+      throw err;
+    }
   }
 }
 

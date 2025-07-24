@@ -66,7 +66,7 @@ router.get('/:id', validateUUIDParam, asyncHandler(async (req: Request, res: Res
  */
 router.post('/', validateBody(CollectionInputSchema), asyncHandler(async (req: Request, res: Response) => {
   try {
-    const { name, description } = req.body;
+    const { name, description, color = 'blue', isPrivate = false, isDefault = false, tags = [] } = req.body;
     
     // Check if collection name already exists
     const existingCollection = await CollectionModel.findByName(name);
@@ -74,7 +74,16 @@ router.post('/', validateBody(CollectionInputSchema), asyncHandler(async (req: R
       throw createApiError.conflict('A collection with this name already exists');
     }
     
-    const collection = await CollectionModel.create(name, description);
+    const collectionInput = {
+      name,
+      description,
+      color,
+      isPrivate,
+      isDefault,
+      tags
+    };
+    
+    const collection = await CollectionModel.create(collectionInput);
     
     const response: CollectionResponse = {
       success: true,
@@ -114,7 +123,7 @@ router.put('/:id', validateUUIDParam, validateBody(CollectionUpdateSchema), asyn
       }
     }
     
-    const updatedCollection = await CollectionModel.update(id, name, description);
+    const updatedCollection = await CollectionModel.update(id, req.body);
     
     if (!updatedCollection) {
       throw createApiError.internalServer('Failed to update collection');

@@ -1,7 +1,8 @@
 import { RecipeModel } from './models/Recipe.js';
 import { CollectionModel } from './models/Collection.js';
 import { db } from './connection.js';
-import type { RecipeInput, RoastingLevel, BrewingMethod } from 'coffee-tracker-shared';
+import { CoffeeOrigin, ProcessingMethod, GrinderModel, FilteringTool } from 'coffee-tracker-shared';
+import type { RecipeInput, RoastingLevel, BrewingMethod, CollectionColor, TurbulenceStep } from 'coffee-tracker-shared';
 
 // Sample recipe data for development and testing
 const sampleRecipes: RecipeInput[] = [
@@ -10,8 +11,8 @@ const sampleRecipes: RecipeInput[] = [
     isFavorite: true,
     collections: [],
     beanInfo: {
-      origin: 'Ethiopia',
-      processingMethod: 'Washed',
+      origin: CoffeeOrigin.ETHIOPIA,
+      processingMethod: ProcessingMethod.WASHED,
       altitude: 1800,
       roastingDate: '2024-01-15',
       roastingLevel: 'light' as RoastingLevel
@@ -19,15 +20,20 @@ const sampleRecipes: RecipeInput[] = [
     brewingParameters: {
       waterTemperature: 93,
       brewingMethod: 'pour-over' as BrewingMethod,
-      grinderModel: 'Baratza Encore',
-      grinderUnit: 'Medium-Fine',
-      filteringTools: 'Hario V60',
-      turbulence: 'Gentle circular pour',
+      grinderModel: GrinderModel.BARATZA_ENCORE,
+      grinderUnit: '12',
+      filteringTools: FilteringTool.PAPER,
+      turbulence: [
+        { actionTime: '0:00', actionDetails: 'Gentle Circle Water Pour', volume: '50ml' },
+        { actionTime: '0:45', actionDetails: 'Continue Pouring', volume: '150ml' },
+        { actionTime: '2:00', actionDetails: 'Final Pour', volume: '150ml' }
+      ] as TurbulenceStep[],
       additionalNotes: 'Bloomed for 45 seconds, total brew time 3:30'
     },
     measurements: {
       coffeeBeans: 22,
       water: 350,
+      brewedCoffeeWeight: 320,
       tds: 1.35,
       extractionYield: 20.5
     },
@@ -47,8 +53,8 @@ const sampleRecipes: RecipeInput[] = [
     isFavorite: false,
     collections: [],
     beanInfo: {
-      origin: 'Colombia',
-      processingMethod: 'Natural',
+      origin: CoffeeOrigin.COLOMBIA,
+      processingMethod: ProcessingMethod.NATURAL,
       altitude: 1650,
       roastingDate: '2024-01-12',
       roastingLevel: 'medium' as RoastingLevel
@@ -56,15 +62,18 @@ const sampleRecipes: RecipeInput[] = [
     brewingParameters: {
       waterTemperature: 96,
       brewingMethod: 'french-press' as BrewingMethod,
-      grinderModel: 'Comandante C40',
-      grinderUnit: 'Coarse',
-      filteringTools: 'French Press',
-      turbulence: 'Single stir at 1 minute',
+      grinderModel: GrinderModel.COMANDANTE_C40,
+      grinderUnit: '33',
+      filteringTools: FilteringTool.METAL,
+      turbulence: [
+        { actionTime: '1:00', actionDetails: 'Single Stir', volume: '500ml' }
+      ] as TurbulenceStep[],
       additionalNotes: '4 minute steep time, plunged slowly'
     },
     measurements: {
       coffeeBeans: 30,
       water: 500,
+      brewedCoffeeWeight: 485,
       tds: 1.28,
       extractionYield: 21.3
     },
@@ -84,8 +93,8 @@ const sampleRecipes: RecipeInput[] = [
     isFavorite: true,
     collections: [],
     beanInfo: {
-      origin: 'Guatemala',
-      processingMethod: 'Washed',
+      origin: CoffeeOrigin.GUATEMALA,
+      processingMethod: ProcessingMethod.WASHED,
       altitude: 1500,
       roastingDate: '2024-01-10',
       roastingLevel: 'medium' as RoastingLevel
@@ -93,15 +102,21 @@ const sampleRecipes: RecipeInput[] = [
     brewingParameters: {
       waterTemperature: 85,
       brewingMethod: 'aeropress' as BrewingMethod,
-      grinderModel: 'Timemore C2',
-      grinderUnit: 'Medium',
-      filteringTools: 'AeroPress with metal filter',
-      turbulence: 'Inverted method, stirred 3 times',
+      grinderModel: GrinderModel.TIMEMORE_C2,
+      grinderUnit: '20',
+      filteringTools: FilteringTool.METAL,
+      turbulence: [
+        { actionTime: '0:00', actionDetails: 'Invert and Add Coffee', volume: '270ml' },
+        { actionTime: '0:30', actionDetails: 'First Stir', volume: '0ml' },
+        { actionTime: '1:00', actionDetails: 'Second Stir', volume: '0ml' },
+        { actionTime: '1:30', actionDetails: 'Final Stir and Press', volume: '0ml' }
+      ] as TurbulenceStep[],
       additionalNotes: '1:30 steep, pressed over 30 seconds'
     },
     measurements: {
       coffeeBeans: 18,
       water: 270,
+      brewedCoffeeWeight: 245,
       tds: 1.42,
       extractionYield: 19.8
     },
@@ -121,24 +136,27 @@ const sampleRecipes: RecipeInput[] = [
     isFavorite: false,
     collections: [],
     beanInfo: {
-      origin: 'Brazil',
-      processingMethod: 'Pulped Natural',
+      origin: CoffeeOrigin.BRAZIL,
+      processingMethod: ProcessingMethod.HONEY,
       altitude: 1200,
       roastingDate: '2024-01-08',
       roastingLevel: 'dark' as RoastingLevel
     },
     brewingParameters: {
-      waterTemperature: 22, // Room temperature
+      waterTemperature: undefined, // Cold brew uses room temperature (outside our 80-100°C range)
       brewingMethod: 'cold-brew' as BrewingMethod,
-      grinderModel: 'Baratza Encore',
-      grinderUnit: 'Extra Coarse',
-      filteringTools: 'Cold brew maker',
-      turbulence: 'Initial stir only',
+      grinderModel: GrinderModel.BARATZA_ENCORE,
+      grinderUnit: '38',
+      filteringTools: FilteringTool.METAL,
+      turbulence: [
+        { actionTime: '0:00', actionDetails: 'Initial Stir', volume: '800ml' }
+      ] as TurbulenceStep[],
       additionalNotes: '12 hour steep at room temperature, then refrigerated'
     },
     measurements: {
       coffeeBeans: 100,
       water: 800,
+      brewedCoffeeWeight: 720,
       tds: 1.15,
       extractionYield: 18.5
     },
@@ -158,8 +176,8 @@ const sampleRecipes: RecipeInput[] = [
     isFavorite: true,
     collections: [],
     beanInfo: {
-      origin: 'Kenya',
-      processingMethod: 'Washed',
+      origin: CoffeeOrigin.KENYA,
+      processingMethod: ProcessingMethod.WASHED,
       altitude: 1700,
       roastingDate: '2024-01-14',
       roastingLevel: 'light' as RoastingLevel
@@ -167,15 +185,21 @@ const sampleRecipes: RecipeInput[] = [
     brewingParameters: {
       waterTemperature: 94,
       brewingMethod: 'pour-over' as BrewingMethod,
-      grinderModel: 'Baratza Virtuoso+',
-      grinderUnit: 'Medium-Coarse',
-      filteringTools: 'Chemex with bonded filters',
-      turbulence: 'Slow spiral pour',
+      grinderModel: GrinderModel.BARATZA_VIRTUOSO_PLUS,
+      grinderUnit: '28',
+      filteringTools: FilteringTool.PAPER,
+      turbulence: [
+        { actionTime: '0:00', actionDetails: 'Pre-infusion', volume: '84ml' },
+        { actionTime: '0:30', actionDetails: 'Slow Spiral Pour', volume: '200ml' },
+        { actionTime: '2:30', actionDetails: 'Continue Spiral Pour', volume: '200ml' },
+        { actionTime: '4:00', actionDetails: 'Final Pour', volume: '216ml' }
+      ] as TurbulenceStep[],
       additionalNotes: 'Pre-infusion 30s, total time 5:30'
     },
     measurements: {
       coffeeBeans: 42,
       water: 700,
+      brewedCoffeeWeight: 650,
       tds: 1.31,
       extractionYield: 20.1
     },
@@ -196,15 +220,27 @@ const sampleRecipes: RecipeInput[] = [
 const sampleCollections = [
   {
     name: 'Morning Favorites',
-    description: 'My go-to recipes for starting the day'
+    description: 'My go-to recipes for starting the day',
+    color: 'blue' as CollectionColor,
+    isPrivate: false,
+    isDefault: false,
+    tags: ['favorites', 'morning']
   },
   {
     name: 'Light Roasts',
-    description: 'Collection of bright, acidic light roast recipes'
+    description: 'Collection of bright, acidic light roast recipes',
+    color: 'orange' as CollectionColor,
+    isPrivate: false,
+    isDefault: false,
+    tags: ['light-roast', 'bright']
   },
   {
     name: 'Experimental Brews',
-    description: 'Testing new techniques and parameters'
+    description: 'Testing new techniques and parameters',
+    color: 'purple' as CollectionColor,
+    isPrivate: false,
+    isDefault: false,
+    tags: ['experimental', 'testing']
   }
 ];
 
@@ -223,7 +259,7 @@ export const seedDatabase = async (): Promise<void> => {
     console.log('📁 Creating sample collections...');
     const createdCollections = [];
     for (const collectionData of sampleCollections) {
-      const collection = await CollectionModel.create(collectionData.name, collectionData.description);
+      const collection = await CollectionModel.create(collectionData);
       createdCollections.push(collection);
       console.log(`✅ Created collection: ${collection.name}`);
     }
@@ -247,17 +283,17 @@ export const seedDatabase = async (): Promise<void> => {
     // Add favorite recipes to Morning Favorites
     for (const recipe of createdRecipes) {
       if (recipe.isFavorite && morningFavorites) {
-        await CollectionModel.addRecipe(morningFavorites.id, recipe.recipeId);
+        await CollectionModel.addRecipe(morningFavorites.collectionId, recipe.recipeId);
       }
       
       // Add light roasts to Light Roasts collection
       if (recipe.beanInfo.roastingLevel === 'light' && lightRoasts) {
-        await CollectionModel.addRecipe(lightRoasts.id, recipe.recipeId);
+        await CollectionModel.addRecipe(lightRoasts.collectionId, recipe.recipeId);
       }
       
       // Add AeroPress recipe to experimental (as an example)
       if (recipe.brewingParameters.brewingMethod === 'aeropress' && experimental) {
-        await CollectionModel.addRecipe(experimental.id, recipe.recipeId);
+        await CollectionModel.addRecipe(experimental.collectionId, recipe.recipeId);
       }
     }
 

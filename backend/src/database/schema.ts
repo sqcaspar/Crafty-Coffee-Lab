@@ -2,71 +2,119 @@ import { db } from './connection.js';
 
 export const createTables = async (): Promise<void> => {
   try {
-    // Create recipes table with all fields from specification
+    // Create recipes table with all fields from specification (PostgreSQL)
     await db.run(`
       CREATE TABLE IF NOT EXISTS recipes (
-        recipe_id TEXT PRIMARY KEY,
-        recipe_name TEXT,
-        date_created TEXT NOT NULL,
-        date_modified TEXT NOT NULL,
+        recipe_id UUID PRIMARY KEY,
+        recipe_name VARCHAR(200),
+        date_created TIMESTAMP NOT NULL,
+        date_modified TIMESTAMP NOT NULL,
         is_favorite BOOLEAN DEFAULT FALSE,
         
         -- Bean Information
-        origin TEXT NOT NULL,
-        processing_method TEXT NOT NULL,
+        origin VARCHAR(100) NOT NULL,
+        processing_method VARCHAR(50) NOT NULL,
         altitude INTEGER,
-        roasting_date TEXT,
-        roasting_level TEXT,
+        roasting_date TIMESTAMP,
+        roasting_level VARCHAR(20),
         
         -- Brewing Parameters
-        water_temperature REAL,
-        brewing_method TEXT,
-        grinder_model TEXT NOT NULL,
-        grinder_unit TEXT NOT NULL,
-        filtering_tools TEXT,
-        turbulence TEXT,
+        water_temperature DECIMAL(5,2),
+        brewing_method VARCHAR(50),
+        grinder_model VARCHAR(100) NOT NULL,
+        grinder_unit VARCHAR(50) NOT NULL,
+        filtering_tools VARCHAR(100),
+        turbulence VARCHAR(200),
         additional_notes TEXT,
         
         -- Measurements
-        coffee_beans REAL NOT NULL,
-        water REAL NOT NULL,
-        coffee_water_ratio REAL,
-        tds REAL,
-        extraction_yield REAL,
+        coffee_beans DECIMAL(8,2) NOT NULL,
+        water DECIMAL(8,2) NOT NULL,
+        coffee_water_ratio DECIMAL(6,2),
+        brewed_coffee_weight DECIMAL(8,2),
+        tds DECIMAL(5,2),
+        extraction_yield DECIMAL(5,2),
         
-        -- Sensation Record
-        overall_impression INTEGER NOT NULL CHECK (overall_impression >= 1 AND overall_impression <= 10),
+        -- Sensation Record (Legacy fields for backwards compatibility)
+        overall_impression INTEGER CHECK (overall_impression >= 1 AND overall_impression <= 10),
         acidity INTEGER CHECK (acidity >= 1 AND acidity <= 10),
         body INTEGER CHECK (body >= 1 AND body <= 10),
         sweetness INTEGER CHECK (sweetness >= 1 AND sweetness <= 10),
         flavor INTEGER CHECK (flavor >= 1 AND flavor <= 10),
         aftertaste INTEGER CHECK (aftertaste >= 1 AND aftertaste <= 10),
         balance INTEGER CHECK (balance >= 1 AND balance <= 10),
-        tasting_notes TEXT
+        tasting_notes TEXT,
+        
+        -- Evaluation System Indicator
+        evaluation_system VARCHAR(20) CHECK (evaluation_system IN ('traditional-sca', 'cva-descriptive', 'cva-affective', 'legacy')),
+        
+        -- Traditional SCA Cupping Form (6-10 point scale with 0.25 increments)
+        sca_fragrance DECIMAL(4,2) CHECK (sca_fragrance >= 6 AND sca_fragrance <= 10),
+        sca_aroma DECIMAL(4,2) CHECK (sca_aroma >= 6 AND sca_aroma <= 10),
+        sca_flavor DECIMAL(4,2) CHECK (sca_flavor >= 6 AND sca_flavor <= 10),
+        sca_aftertaste DECIMAL(4,2) CHECK (sca_aftertaste >= 6 AND sca_aftertaste <= 10),
+        sca_acidity_quality DECIMAL(4,2) CHECK (sca_acidity_quality >= 6 AND sca_acidity_quality <= 10),
+        sca_acidity_intensity VARCHAR(10) CHECK (sca_acidity_intensity IN ('High', 'Medium', 'Low')),
+        sca_body_quality DECIMAL(4,2) CHECK (sca_body_quality >= 6 AND sca_body_quality <= 10),
+        sca_body_level VARCHAR(10) CHECK (sca_body_level IN ('Heavy', 'Medium', 'Thin')),
+        sca_balance DECIMAL(4,2) CHECK (sca_balance >= 6 AND sca_balance <= 10),
+        sca_overall DECIMAL(4,2) CHECK (sca_overall >= 6 AND sca_overall <= 10),
+        sca_uniformity INTEGER CHECK (sca_uniformity >= 0 AND sca_uniformity <= 10 AND sca_uniformity % 2 = 0),
+        sca_clean_cup INTEGER CHECK (sca_clean_cup >= 0 AND sca_clean_cup <= 10 AND sca_clean_cup % 2 = 0),
+        sca_sweetness INTEGER CHECK (sca_sweetness >= 0 AND sca_sweetness <= 10 AND sca_sweetness % 2 = 0),
+        sca_taint_defects INTEGER CHECK (sca_taint_defects >= 0 AND sca_taint_defects <= 20 AND sca_taint_defects % 2 = 0),
+        sca_fault_defects INTEGER CHECK (sca_fault_defects >= 0 AND sca_fault_defects <= 40 AND sca_fault_defects % 4 = 0),
+        sca_final_score DECIMAL(4,2) CHECK (sca_final_score >= 36 AND sca_final_score <= 100),
+        
+        -- CVA Descriptive Assessment (0-15 intensity scale)
+        cva_desc_fragrance_intensity INTEGER CHECK (cva_desc_fragrance_intensity >= 0 AND cva_desc_fragrance_intensity <= 15),
+        cva_desc_aroma_intensity INTEGER CHECK (cva_desc_aroma_intensity >= 0 AND cva_desc_aroma_intensity <= 15),
+        cva_desc_flavor_intensity INTEGER CHECK (cva_desc_flavor_intensity >= 0 AND cva_desc_flavor_intensity <= 15),
+        cva_desc_aftertaste_intensity INTEGER CHECK (cva_desc_aftertaste_intensity >= 0 AND cva_desc_aftertaste_intensity <= 15),
+        cva_desc_acidity_intensity INTEGER CHECK (cva_desc_acidity_intensity >= 0 AND cva_desc_acidity_intensity <= 15),
+        cva_desc_sweetness_intensity INTEGER CHECK (cva_desc_sweetness_intensity >= 0 AND cva_desc_sweetness_intensity <= 15),
+        cva_desc_mouthfeel_intensity INTEGER CHECK (cva_desc_mouthfeel_intensity >= 0 AND cva_desc_mouthfeel_intensity <= 15),
+        cva_desc_olfactory_descriptors JSONB DEFAULT '[]',
+        cva_desc_retronasal_descriptors JSONB DEFAULT '[]',
+        cva_desc_main_tastes JSONB DEFAULT '[]',
+        cva_desc_mouthfeel_descriptors JSONB DEFAULT '[]',
+        
+        -- CVA Affective Assessment (1-9 quality scale)
+        cva_aff_fragrance INTEGER CHECK (cva_aff_fragrance >= 1 AND cva_aff_fragrance <= 9),
+        cva_aff_aroma INTEGER CHECK (cva_aff_aroma >= 1 AND cva_aff_aroma <= 9),
+        cva_aff_flavor INTEGER CHECK (cva_aff_flavor >= 1 AND cva_aff_flavor <= 9),
+        cva_aff_aftertaste INTEGER CHECK (cva_aff_aftertaste >= 1 AND cva_aff_aftertaste <= 9),
+        cva_aff_acidity INTEGER CHECK (cva_aff_acidity >= 1 AND cva_aff_acidity <= 9),
+        cva_aff_sweetness INTEGER CHECK (cva_aff_sweetness >= 1 AND cva_aff_sweetness <= 9),
+        cva_aff_mouthfeel INTEGER CHECK (cva_aff_mouthfeel >= 1 AND cva_aff_mouthfeel <= 9),
+        cva_aff_overall INTEGER CHECK (cva_aff_overall >= 1 AND cva_aff_overall <= 9),
+        cva_aff_non_uniform_cups INTEGER CHECK (cva_aff_non_uniform_cups >= 0 AND cva_aff_non_uniform_cups <= 5),
+        cva_aff_defective_cups INTEGER CHECK (cva_aff_defective_cups >= 0 AND cva_aff_defective_cups <= 5),
+        cva_aff_score DECIMAL(4,2) CHECK (cva_aff_score >= 58 AND cva_aff_score <= 100)
       )
     `);
 
-    // Create collections table with comprehensive schema
+    // Create collections table with comprehensive schema (PostgreSQL)
     await db.run(`
       CREATE TABLE IF NOT EXISTS collections (
-        collection_id TEXT PRIMARY KEY,
-        name TEXT NOT NULL UNIQUE,
+        collection_id UUID PRIMARY KEY,
+        name VARCHAR(100) NOT NULL UNIQUE,
         description TEXT,
-        color TEXT NOT NULL DEFAULT 'blue',
+        color VARCHAR(20) NOT NULL DEFAULT 'blue',
         is_private BOOLEAN DEFAULT FALSE,
         is_default BOOLEAN DEFAULT FALSE,
-        tags TEXT DEFAULT '[]',
-        date_created TEXT NOT NULL,
-        date_modified TEXT NOT NULL
+        tags JSONB DEFAULT '[]',
+        date_created TIMESTAMP NOT NULL,
+        date_modified TIMESTAMP NOT NULL
       )
     `);
 
-    // Create recipe_collections junction table for many-to-many relationship
+    // Create recipe_collections junction table for many-to-many relationship (PostgreSQL)
     await db.run(`
       CREATE TABLE IF NOT EXISTS recipe_collections (
-        recipe_id TEXT NOT NULL,
-        collection_id TEXT NOT NULL,
-        date_assigned TEXT NOT NULL,
+        recipe_id UUID NOT NULL,
+        collection_id UUID NOT NULL,
+        date_assigned TIMESTAMP NOT NULL,
         PRIMARY KEY (recipe_id, collection_id),
         FOREIGN KEY (recipe_id) REFERENCES recipes (recipe_id) ON DELETE CASCADE,
         FOREIGN KEY (collection_id) REFERENCES collections (collection_id) ON DELETE CASCADE

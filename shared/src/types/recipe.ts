@@ -28,11 +28,20 @@ export enum SortOption {
  * Bean Information interface
  */
 export interface BeanInfo {
-  origin: string; // Required - country name
+  origin: string; // Required - coffee origin country (will be CoffeeOrigin enum values)
   processingMethod: string; // Required - washed, natural, etc.
   altitude?: number; // Optional - meters above sea level
   roastingDate?: string; // Optional - ISO date string
   roastingLevel?: RoastingLevel; // Optional - controlled enum
+}
+
+/**
+ * Turbulence Step interface for structured brewing process
+ */
+export interface TurbulenceStep {
+  actionTime: string; // Time format like "0:00", "1:30"
+  actionDetails: string; // Description of the action
+  volume: string; // Volume like "30ml", "50g"
 }
 
 /**
@@ -44,7 +53,7 @@ export interface BrewingParameters {
   grinderModel: string; // Required - grinder brand/model
   grinderUnit: string; // Required - grind size description
   filteringTools?: string; // Optional - filters, papers used
-  turbulence?: string; // Optional - stirring, agitation notes
+  turbulence?: string | TurbulenceStep[]; // Optional - legacy string or structured steps
   additionalNotes?: string; // Optional - any extra brewing notes
 }
 
@@ -55,8 +64,9 @@ export interface Measurements {
   coffeeBeans: number; // Required - grams of coffee
   water: number; // Required - grams of water
   coffeeWaterRatio: number; // Auto-calculated ratio
+  brewedCoffeeWeight?: number; // Optional - grams of brewed coffee output
   tds?: number; // Optional - total dissolved solids percentage
-  extractionYield?: number; // Optional - extraction percentage
+  extractionYield?: number; // Optional - extraction percentage (auto-calculated when possible)
 }
 
 /**
@@ -67,10 +77,96 @@ export interface MeasurementsInput extends Omit<Measurements, 'coffeeWaterRatio'
 }
 
 /**
+ * Traditional SCA Cupping Form Evaluation (6-10 point scale)
+ * Based on SCA 2004 cupping protocol with specific quality descriptors
+ */
+export interface TraditionalSCAEvaluation {
+  // Quality attributes (6.00-10.00 points each with 0.25 increments)
+  // 6.00=Good, 7.00=Very Good, 8.00=Excellent, 9.00=Outstanding, 10.00=Perfect
+  fragrance?: number;        // Fragrance/Aroma dry evaluation
+  aroma?: number;           // Wet aroma evaluation
+  flavor?: number;          // Combined taste and retronasal perception
+  aftertaste?: number;      // Lingering taste sensations
+  acidity?: number;         // Quality of acidity (6-10)
+  acidityIntensity?: 'High' | 'Medium' | 'Low'; // Acidity level descriptor
+  body?: number;            // Quality of body/mouthfeel (6-10)
+  bodyLevel?: 'Heavy' | 'Medium' | 'Thin'; // Body level descriptor
+  balance?: number;         // Overall harmony of attributes
+  overall?: number;         // Final impression score
+  
+  // Cup characteristics (2 points per cup, maximum 10 points across 5 cups)
+  uniformity?: number;      // Consistency across cups (0-10)
+  cleanCup?: number;        // Freedom from defects (0-10)
+  sweetness?: number;       // Sweet taste perception (0-10)
+  
+  // Defect penalties (negative points)
+  taintDefects?: number;    // -2 points per affected cup
+  faultDefects?: number;    // -4 points per affected cup
+  
+  // Calculated total score
+  finalScore?: number;      // Sum of all attributes minus defects (36-100 range)
+}
+
+/**
+ * CVA Descriptive Assessment (0-15 intensity scale)
+ * Measures strength/intensity of sensory perceptions
+ */
+export interface CVADescriptiveAssessment {
+  // Intensity ratings (0-15 scale: 0=None, 5-10=Medium, 15=Extremely High)
+  fragranceIntensity?: number;    // Dry coffee fragrance intensity
+  aromaIntensity?: number;        // Wet coffee aroma intensity
+  flavorIntensity?: number;       // Combined taste and retronasal intensity
+  aftertasteIntensity?: number;   // Lingering sensation intensity
+  acidityIntensity?: number;      // Sourness perception intensity
+  sweetnessIntensity?: number;    // Sweet taste/aroma intensity
+  mouthfeelIntensity?: number;    // Tactile sensation intensity
+  
+  // Check-All-That-Apply (CATA) descriptor selections with limits
+  olfactoryDescriptors?: string[];    // Up to 5 from predefined flavor categories
+  retronasalDescriptors?: string[];   // Up to 5 flavor/aftertaste descriptors
+  mainTastes?: string[];              // Up to 2 from: salty, sour, sweet, bitter, umami
+  mouthfeelDescriptors?: string[];    // Up to 2: metallic, rough, oily, smooth, mouth-drying
+}
+
+/**
+ * CVA Affective Assessment (1-9 quality scale)
+ * Measures impression of quality across sensory attributes
+ */
+export interface CVAAffectiveAssessment {
+  // Quality impression ratings (1-9 scale)
+  // 1=Extremely Low, 5=Neutral, 9=Extremely High impression of quality
+  fragrance?: number;      // Fragrance quality impression
+  aroma?: number;          // Aroma quality impression
+  flavor?: number;         // Flavor quality impression
+  aftertaste?: number;     // Aftertaste quality impression
+  acidity?: number;        // Acidity quality impression
+  sweetness?: number;      // Sweetness quality impression
+  mouthfeel?: number;      // Mouthfeel quality impression
+  overall?: number;        // Overall quality impression
+  
+  // Cup uniformity and defect counts (0-5 cups each)
+  nonUniformCups?: number; // Number of non-uniform cups (penalty factor)
+  defectiveCups?: number;  // Number of defective cups (penalty factor)
+  
+  // Calculated CVA score using formula: S = 6.25 × (Σhi) + 37.5 - 2u - 4d
+  cvaScore?: number;       // Final score (58.00-100.00, rounded to nearest 0.25)
+}
+
+/**
+ * Evaluation System Types
+ */
+export type EvaluationSystem = 'traditional-sca' | 'cva-descriptive' | 'cva-affective' | 'legacy';
+
+/**
  * Sensation Record interface for taste evaluation
+ * Supports multiple evaluation systems while maintaining backwards compatibility
  */
 export interface SensationRecord {
-  overallImpression: number; // Required - 1-10 scale
+  // Evaluation system indicator
+  evaluationSystem?: EvaluationSystem;
+  
+  // Legacy fields (maintain backwards compatibility with existing simple 1-10 system)
+  overallImpression?: number; // Required for legacy - 1-10 scale
   acidity?: number; // Optional - 1-10 scale
   body?: number; // Optional - 1-10 scale
   sweetness?: number; // Optional - 1-10 scale
@@ -78,6 +174,11 @@ export interface SensationRecord {
   aftertaste?: number; // Optional - 1-10 scale
   balance?: number; // Optional - 1-10 scale
   tastingNotes?: string; // Optional - free-form tasting notes
+  
+  // New SCA/CVA evaluation systems
+  traditionalSCA?: TraditionalSCAEvaluation;
+  cvaDescriptive?: CVADescriptiveAssessment;
+  cvaAffective?: CVAAffectiveAssessment;
 }
 
 /**

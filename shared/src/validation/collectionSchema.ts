@@ -12,13 +12,21 @@ export const CollectionSchema = z.object({
 // Collection Input validation schema (for creation)
 export const CollectionInputSchema = z.object({
   name: z.string().min(1, 'Collection name is required').max(100, 'Collection name must be 100 characters or less'),
-  description: z.string().max(500, 'Description must be 500 characters or less').optional()
+  description: z.string().max(500, 'Description must be 500 characters or less').optional(),
+  color: z.enum(['blue', 'green', 'orange', 'red', 'purple', 'teal', 'pink', 'indigo', 'gray']).default('blue'),
+  isPrivate: z.boolean().default(false),
+  isDefault: z.boolean().default(false),
+  tags: z.array(z.string()).default([])
 });
 
 // Collection Update validation schema (partial updates allowed)
 export const CollectionUpdateSchema = z.object({
   name: z.string().min(1, 'Collection name is required').max(100, 'Collection name must be 100 characters or less').optional(),
-  description: z.string().max(500, 'Description must be 500 characters or less').optional()
+  description: z.string().max(500, 'Description must be 500 characters or less').optional(),
+  color: z.enum(['blue', 'green', 'orange', 'red', 'purple', 'teal', 'pink', 'indigo', 'gray']).optional(),
+  isPrivate: z.boolean().optional(),
+  isDefault: z.boolean().optional(),
+  tags: z.array(z.string()).optional()
 });
 
 // Collection Summary validation schema
