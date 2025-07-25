@@ -232,18 +232,30 @@ export class RecipeModel {
       scaFaultDefects: sensation.traditionalSCA?.faultDefects ?? null,
       scaFinalScore: sensation.traditionalSCA?.finalScore ?? null,
       
-      // CVA Descriptive
-      cvaDescFragranceIntensity: sensation.cvaDescriptive?.fragranceIntensity ?? null,
-      cvaDescAromaIntensity: sensation.cvaDescriptive?.aromaIntensity ?? null,
-      cvaDescFlavorIntensity: sensation.cvaDescriptive?.flavorIntensity ?? null,
-      cvaDescAftertasteIntensity: sensation.cvaDescriptive?.aftertasteIntensity ?? null,
-      cvaDescAcidityIntensity: sensation.cvaDescriptive?.acidityIntensity ?? null,
-      cvaDescSweetnessIntensity: sensation.cvaDescriptive?.sweetnessIntensity ?? null,
-      cvaDescMouthfeelIntensity: sensation.cvaDescriptive?.mouthfeelIntensity ?? null,
-      cvaDescOlfactoryDescriptors: sensation.cvaDescriptive?.olfactoryDescriptors ? JSON.stringify(sensation.cvaDescriptive.olfactoryDescriptors) : null,
-      cvaDescRetronasalDescriptors: sensation.cvaDescriptive?.retronasalDescriptors ? JSON.stringify(sensation.cvaDescriptive.retronasalDescriptors) : null,
+      // CVA Descriptive Assessment (SCA Standard 103-P/2024)
+      cvaDescFragrance: sensation.cvaDescriptive?.fragrance ?? null,
+      cvaDescAroma: sensation.cvaDescriptive?.aroma ?? null,
+      cvaDescFlavor: sensation.cvaDescriptive?.flavor ?? null,
+      cvaDescAftertaste: sensation.cvaDescriptive?.aftertaste ?? null,
+      cvaDescAcidity: sensation.cvaDescriptive?.acidity ?? null,
+      cvaDescSweetness: sensation.cvaDescriptive?.sweetness ?? null,
+      cvaDescMouthfeel: sensation.cvaDescriptive?.mouthfeel ?? null,
+      
+      // CATA Descriptor arrays (combined per SCA standard)
+      cvaDescFragranceAromaDescriptors: sensation.cvaDescriptive?.fragranceAromaDescriptors ? JSON.stringify(sensation.cvaDescriptive.fragranceAromaDescriptors) : null,
+      cvaDescFlavorAftertasteDescriptors: sensation.cvaDescriptive?.flavorAftertasteDescriptors ? JSON.stringify(sensation.cvaDescriptive.flavorAftertasteDescriptors) : null,
       cvaDescMainTastes: sensation.cvaDescriptive?.mainTastes ? JSON.stringify(sensation.cvaDescriptive.mainTastes) : null,
       cvaDescMouthfeelDescriptors: sensation.cvaDescriptive?.mouthfeelDescriptors ? JSON.stringify(sensation.cvaDescriptive.mouthfeelDescriptors) : null,
+      
+      // Free text descriptors
+      cvaDescAcidityDescriptors: sensation.cvaDescriptive?.acidityDescriptors ?? null,
+      cvaDescSweetnessDescriptors: sensation.cvaDescriptive?.sweetnessDescriptors ?? null,
+      cvaDescAdditionalNotes: sensation.cvaDescriptive?.additionalNotes ?? null,
+      
+      // Assessment metadata
+      cvaDescRoastLevel: sensation.cvaDescriptive?.roastLevel ?? null,
+      cvaDescAssessmentDate: sensation.cvaDescriptive?.assessmentDate ?? null,
+      cvaDescAssessorId: sensation.cvaDescriptive?.assessorId ?? null,
       
       // CVA Affective
       cvaAffFragrance: sensation.cvaAffective?.fragrance ?? null,
@@ -280,15 +292,17 @@ export class RecipeModel {
         sca_fragrance, sca_aroma, sca_flavor, sca_aftertaste, sca_acidity_quality, sca_acidity_intensity,
         sca_body_quality, sca_body_level, sca_balance, sca_overall, sca_uniformity, sca_clean_cup,
         sca_sweetness, sca_taint_defects, sca_fault_defects, sca_final_score,
-        cva_desc_fragrance_intensity, cva_desc_aroma_intensity, cva_desc_flavor_intensity, cva_desc_aftertaste_intensity,
-        cva_desc_acidity_intensity, cva_desc_sweetness_intensity, cva_desc_mouthfeel_intensity,
-        cva_desc_olfactory_descriptors, cva_desc_retronasal_descriptors, cva_desc_main_tastes, cva_desc_mouthfeel_descriptors,
+        cva_desc_fragrance, cva_desc_aroma, cva_desc_flavor, cva_desc_aftertaste,
+        cva_desc_acidity, cva_desc_sweetness, cva_desc_mouthfeel,
+        cva_desc_fragrance_aroma_descriptors, cva_desc_flavor_aftertaste_descriptors, cva_desc_main_tastes, cva_desc_mouthfeel_descriptors,
+        cva_desc_acidity_descriptors, cva_desc_sweetness_descriptors, cva_desc_additional_notes,
+        cva_desc_roast_level, cva_desc_assessment_date, cva_desc_assessor_id,
         cva_aff_fragrance, cva_aff_aroma, cva_aff_flavor, cva_aff_aftertaste, cva_aff_acidity,
         cva_aff_sweetness, cva_aff_mouthfeel, cva_aff_overall, cva_aff_non_uniform_cups, cva_aff_defective_cups, cva_aff_score
       ) VALUES (
         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24,
         $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, $42, $43, $44, $45, $46, $47,
-        $48, $49, $50, $51, $52, $53, $54, $55, $56, $57, $58, $59, $60, $61, $62, $63, $64, $65, $66, $67
+        $48, $49, $50, $51, $52, $53, $54, $55, $56, $57, $58, $59, $60, $61, $62, $63, $64, $65, $66, $67, $68, $69, $70
       )
     `;
 
@@ -318,9 +332,11 @@ export class RecipeModel {
       evalData.scaSweetness, evalData.scaTaintDefects, evalData.scaFaultDefects, evalData.scaFinalScore,
       
       // CVA Descriptive
-      evalData.cvaDescFragranceIntensity, evalData.cvaDescAromaIntensity, evalData.cvaDescFlavorIntensity, evalData.cvaDescAftertasteIntensity,
-      evalData.cvaDescAcidityIntensity, evalData.cvaDescSweetnessIntensity, evalData.cvaDescMouthfeelIntensity,
-      evalData.cvaDescOlfactoryDescriptors, evalData.cvaDescRetronasalDescriptors, evalData.cvaDescMainTastes, evalData.cvaDescMouthfeelDescriptors,
+      evalData.cvaDescFragrance, evalData.cvaDescAroma, evalData.cvaDescFlavor, evalData.cvaDescAftertaste,
+      evalData.cvaDescAcidity, evalData.cvaDescSweetness, evalData.cvaDescMouthfeel,
+      evalData.cvaDescFragranceAromaDescriptors, evalData.cvaDescFlavorAftertasteDescriptors, evalData.cvaDescMainTastes, evalData.cvaDescMouthfeelDescriptors,
+      evalData.cvaDescAcidityDescriptors, evalData.cvaDescSweetnessDescriptors, evalData.cvaDescAdditionalNotes,
+      evalData.cvaDescRoastLevel, evalData.cvaDescAssessmentDate, evalData.cvaDescAssessorId,
       
       // CVA Affective
       evalData.cvaAffFragrance, evalData.cvaAffAroma, evalData.cvaAffFlavor, evalData.cvaAffAftertaste, evalData.cvaAffAcidity,

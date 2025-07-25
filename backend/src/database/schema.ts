@@ -66,18 +66,30 @@ export const createTables = async (): Promise<void> => {
         sca_fault_defects INTEGER CHECK (sca_fault_defects >= 0 AND sca_fault_defects <= 40 AND sca_fault_defects % 4 = 0),
         sca_final_score DECIMAL(4,2) CHECK (sca_final_score >= 36 AND sca_final_score <= 100),
         
-        -- CVA Descriptive Assessment (0-15 intensity scale)
-        cva_desc_fragrance_intensity INTEGER CHECK (cva_desc_fragrance_intensity >= 0 AND cva_desc_fragrance_intensity <= 15),
-        cva_desc_aroma_intensity INTEGER CHECK (cva_desc_aroma_intensity >= 0 AND cva_desc_aroma_intensity <= 15),
-        cva_desc_flavor_intensity INTEGER CHECK (cva_desc_flavor_intensity >= 0 AND cva_desc_flavor_intensity <= 15),
-        cva_desc_aftertaste_intensity INTEGER CHECK (cva_desc_aftertaste_intensity >= 0 AND cva_desc_aftertaste_intensity <= 15),
-        cva_desc_acidity_intensity INTEGER CHECK (cva_desc_acidity_intensity >= 0 AND cva_desc_acidity_intensity <= 15),
-        cva_desc_sweetness_intensity INTEGER CHECK (cva_desc_sweetness_intensity >= 0 AND cva_desc_sweetness_intensity <= 15),
-        cva_desc_mouthfeel_intensity INTEGER CHECK (cva_desc_mouthfeel_intensity >= 0 AND cva_desc_mouthfeel_intensity <= 15),
-        cva_desc_olfactory_descriptors JSONB DEFAULT '[]',
-        cva_desc_retronasal_descriptors JSONB DEFAULT '[]',
-        cva_desc_main_tastes JSONB DEFAULT '[]',
-        cva_desc_mouthfeel_descriptors JSONB DEFAULT '[]',
+        -- CVA Descriptive Assessment (SCA Standard 103-P/2024) - 0-15 intensity scale
+        cva_desc_fragrance INTEGER CHECK (cva_desc_fragrance >= 0 AND cva_desc_fragrance <= 15),
+        cva_desc_aroma INTEGER CHECK (cva_desc_aroma >= 0 AND cva_desc_aroma <= 15),
+        cva_desc_flavor INTEGER CHECK (cva_desc_flavor >= 0 AND cva_desc_flavor <= 15),
+        cva_desc_aftertaste INTEGER CHECK (cva_desc_aftertaste >= 0 AND cva_desc_aftertaste <= 15),
+        cva_desc_acidity INTEGER CHECK (cva_desc_acidity >= 0 AND cva_desc_acidity <= 15),
+        cva_desc_sweetness INTEGER CHECK (cva_desc_sweetness >= 0 AND cva_desc_sweetness <= 15),
+        cva_desc_mouthfeel INTEGER CHECK (cva_desc_mouthfeel >= 0 AND cva_desc_mouthfeel <= 15),
+        
+        -- CATA Descriptor arrays (combined per SCA standard)
+        cva_desc_fragrance_aroma_descriptors JSONB DEFAULT '[]',  -- Combined fragrance + aroma (≤5 total)
+        cva_desc_flavor_aftertaste_descriptors JSONB DEFAULT '[]',  -- Combined flavor + aftertaste (≤5 total)
+        cva_desc_main_tastes JSONB DEFAULT '[]',  -- Main tastes (≤2 selections)
+        cva_desc_mouthfeel_descriptors JSONB DEFAULT '[]',  -- Mouthfeel descriptors (≤2 selections)
+        
+        -- Free text descriptors
+        cva_desc_acidity_descriptors TEXT,  -- Free text for acidity (e.g., "tartaric, bright")
+        cva_desc_sweetness_descriptors TEXT,  -- Free text for sweetness (e.g., "cane sugar, caramel")
+        cva_desc_additional_notes TEXT,  -- Additional descriptors not captured elsewhere
+        
+        -- Assessment metadata
+        cva_desc_roast_level VARCHAR(100),  -- Visual roast assessment (e.g., "Light (Agtron 58)")
+        cva_desc_assessment_date TIMESTAMP,  -- Assessment completion date
+        cva_desc_assessor_id VARCHAR(100),  -- Cupper identification
         
         -- CVA Affective Assessment (1-9 quality scale)
         cva_aff_fragrance INTEGER CHECK (cva_aff_fragrance >= 1 AND cva_aff_fragrance <= 9),
@@ -90,7 +102,7 @@ export const createTables = async (): Promise<void> => {
         cva_aff_overall INTEGER CHECK (cva_aff_overall >= 1 AND cva_aff_overall <= 9),
         cva_aff_non_uniform_cups INTEGER CHECK (cva_aff_non_uniform_cups >= 0 AND cva_aff_non_uniform_cups <= 5),
         cva_aff_defective_cups INTEGER CHECK (cva_aff_defective_cups >= 0 AND cva_aff_defective_cups <= 5),
-        cva_aff_score DECIMAL(4,2) CHECK (cva_aff_score >= 58 AND cva_aff_score <= 100)
+        cva_aff_score DECIMAL(4,2) CHECK (cva_aff_score >= 0 AND cva_aff_score <= 100)
       )
     `);
 
