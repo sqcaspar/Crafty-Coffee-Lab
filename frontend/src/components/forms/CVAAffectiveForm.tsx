@@ -229,10 +229,11 @@ const CVAAffectiveForm: React.FC<CVAAffectiveFormProps> = ({
           CVA Score Calculation Formula
         </h4>
         <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-          <p><strong>S = 6.25 × (Σhi) + 37.5 - 2u - 4d</strong></p>
+          <p><strong>S = 0.65625 × Σhi + 52.75 - 2u - 4d</strong></p>
           <div className="ml-4 space-y-1">
-            <p>• S = Final CVA Score (58-100, rounded to nearest 0.25)</p>
-            <p>• Σhi = Sum of all eight 9-point section scores</p>
+            <p>• S = Cupping score prior to rounding (rounded to nearest 0.25)</p>
+            <p>• hi = 9-point score of each affective section, from i=1 (fragrance) to i=8 (overall)</p>
+            <p>• Σhi = Sum of all eight 9-point section scores (1-9 scale, 5=neutral liking)</p>
             <p>• u = Number of non-uniform cups</p>
             <p>• d = Number of defective cups</p>
           </div>
@@ -265,17 +266,17 @@ const CVAAffectiveForm: React.FC<CVAAffectiveFormProps> = ({
             <div className="bg-white dark:bg-gray-800 p-3 rounded border">
               <div className="text-gray-500 dark:text-gray-400">Section Scores (Σhi)</div>
               <div className="font-medium">
-                {((value.fragrance || 0) + (value.aroma || 0) + (value.flavor || 0) + 
-                  (value.aftertaste || 0) + (value.acidity || 0) + (value.sweetness || 0) + 
-                  (value.mouthfeel || 0) + (value.overall || 0))}
+                {((value.fragrance || 5) + (value.aroma || 5) + (value.flavor || 5) + 
+                  (value.aftertaste || 5) + (value.acidity || 5) + (value.sweetness || 5) + 
+                  (value.mouthfeel || 5) + (value.overall || 5))}
               </div>
             </div>
             <div className="bg-white dark:bg-gray-800 p-3 rounded border">
               <div className="text-gray-500 dark:text-gray-400">Base Score</div>
               <div className="font-medium">
-                {(6.25 * ((value.fragrance || 0) + (value.aroma || 0) + (value.flavor || 0) + 
-                          (value.aftertaste || 0) + (value.acidity || 0) + (value.sweetness || 0) + 
-                          (value.mouthfeel || 0) + (value.overall || 0)) + 37.5).toFixed(2)}
+                {(0.65625 * ((value.fragrance || 5) + (value.aroma || 5) + (value.flavor || 5) + 
+                          (value.aftertaste || 5) + (value.acidity || 5) + (value.sweetness || 5) + 
+                          (value.mouthfeel || 5) + (value.overall || 5)) + 52.75).toFixed(2)}
               </div>
             </div>
             <div className="bg-white dark:bg-gray-800 p-3 rounded border">

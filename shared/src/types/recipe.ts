@@ -145,6 +145,7 @@ export interface CVAAffectiveAssessment {
   defectiveCups?: number;  // Cups scored as moldy, phenolic, or potato
   
   // Calculated CVA score using official formula: S = 0.65625 × Σhi + 52.75 - 2u - 4d
+  // Where hi = 9-point score of each affective section, from i=1 (fragrance) to i=8 (overall)
   cvaScore?: number;       // Final CVA Affective Score (rounded to nearest 0.25)
 }
 

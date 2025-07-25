@@ -50,25 +50,27 @@ export function calculateSCAScore(evaluation: TraditionalSCAEvaluation): number 
  * CVA Affective Assessment Score Calculation
  * Official Formula: S = 0.65625 × Σhi + 52.75 - 2u - 4d
  * Where:
- * - S = Final cupping score (rounded to nearest 0.25)
- * - Σhi = Sum of all eight 9-point section scores (1-9 scale, 5=neutral)
+ * - S = Final cupping score prior to rounding (rounded to nearest 0.25)
+ * - Σhi = Sum of all eight 9-point section scores from i=1 (fragrance) to i=8 (overall)
+ * - hi = 9-point score of each affective section (1-9 scale, 5=neutral liking)
  * - u = Number of non-uniform cups
  * - d = Number of defective cups
  */
 export function calculateCVAScore(evaluation: CVAAffectiveAssessment): number {
-  // All eight sections (1-9 points each, default to 5 = neutral)
+  // All eight sections (1-9 points each, default to 5 = neutral liking)
+  // i=1 to i=8: fragrance, aroma, flavor, aftertaste, acidity, sweetness, mouthfeel, overall
   const sectionScores = [
-    evaluation.fragrance || 5,
-    evaluation.aroma || 5,
-    evaluation.flavor || 5,
-    evaluation.aftertaste || 5,
-    evaluation.acidity || 5,
-    evaluation.sweetness || 5,
-    evaluation.mouthfeel || 5,
-    evaluation.overall || 5,
+    evaluation.fragrance || 5,  // i=1: Fragrance impression of quality
+    evaluation.aroma || 5,      // i=2: Aroma impression of quality
+    evaluation.flavor || 5,     // i=3: Flavor impression of quality
+    evaluation.aftertaste || 5, // i=4: Aftertaste impression of quality
+    evaluation.acidity || 5,    // i=5: Acidity impression of quality
+    evaluation.sweetness || 5,  // i=6: Sweetness impression of quality
+    evaluation.mouthfeel || 5,  // i=7: Mouthfeel impression of quality
+    evaluation.overall || 5,    // i=8: Overall impression of quality
   ];
 
-  // Sum of all section scores (Σhi)
+  // Sum of all eight section scores (Σhi from i=1 to i=8)
   const sumOfScores = sectionScores.reduce((sum, score) => sum + score, 0);
 
   // Cup penalties
@@ -212,8 +214,9 @@ export function getSCAMaximumScore(): number {
  * Calculate theoretical maximum score for CVA evaluation
  */
 export function getCVAMaximumScore(): number {
-  // Formula: 6.25 × (8 × 9) + 37.5 = 6.25 × 72 + 37.5 = 450 + 37.5 = 487.5
-  // But maximum is capped at 100 in practice
+  // Official Formula: S = 0.65625 × Σhi + 52.75 - 2u - 4d
+  // Maximum: 0.65625 × (8 × 9) + 52.75 - 0 - 0 = 0.65625 × 72 + 52.75 = 47.25 + 52.75 = 100
+  // With perfect scores (all 9s) and no defects, theoretical max is exactly 100
   return 100;
 }
 
