@@ -80,8 +80,9 @@ export function calculateCVAScore(evaluation: CVAAffectiveAssessment): number {
   // Official CVA Formula: S = 0.65625 × Σhi + 52.75 - 2u - 4d
   const cvaScore = (0.65625 * sumOfScores) + 52.75 - (2 * nonUniformCups) - (4 * defectiveCups);
 
-  // Round to nearest 0.25 and ensure within valid range
-  return Math.max(58, Math.min(100, Math.round(cvaScore * 4) / 4));
+  // Round to nearest 0.25 and ensure within valid range (0-100)
+  // Note: Minimum can go below 58 due to cup penalties (e.g., 5 non-uniform + 5 defective = -30 penalty)
+  return Math.max(0, Math.min(100, Math.round(cvaScore * 4) / 4));
 }
 
 /**
@@ -199,7 +200,7 @@ export function isValidSCAScore(score: number): boolean {
  * Validate score range for CVA system
  */
 export function isValidCVAScore(score: number): boolean {
-  return score >= 58 && score <= 100;
+  return score >= 0 && score <= 100;
 }
 
 /**
