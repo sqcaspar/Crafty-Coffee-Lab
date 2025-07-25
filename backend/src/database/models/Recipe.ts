@@ -140,9 +140,7 @@ export class RecipeModel {
           flavor: row.sca_flavor ?? undefined,
           aftertaste: row.sca_aftertaste ?? undefined,
           acidity: row.sca_acidity_quality ?? undefined,
-          acidityIntensity: row.sca_acidity_intensity as 'High' | 'Medium' | 'Low' ?? undefined,
           body: row.sca_body_quality ?? undefined,
-          bodyLevel: row.sca_body_level as 'Heavy' | 'Medium' | 'Thin' ?? undefined,
           balance: row.sca_balance ?? undefined,
           overall: row.sca_overall ?? undefined,
           uniformity: row.sca_uniformity ?? undefined,
@@ -224,9 +222,7 @@ export class RecipeModel {
       scaFlavor: sensation.traditionalSCA?.flavor ?? null,
       scaAftertaste: sensation.traditionalSCA?.aftertaste ?? null,
       scaAcidityQuality: sensation.traditionalSCA?.acidity ?? null,
-      scaAcidityIntensity: sensation.traditionalSCA?.acidityIntensity ?? null,
       scaBodyQuality: sensation.traditionalSCA?.body ?? null,
-      scaBodyLevel: sensation.traditionalSCA?.bodyLevel ?? null,
       scaBalance: sensation.traditionalSCA?.balance ?? null,
       scaOverall: sensation.traditionalSCA?.overall ?? null,
       scaUniformity: sensation.traditionalSCA?.uniformity ?? null,
@@ -317,7 +313,7 @@ export class RecipeModel {
       
       // Traditional SCA
       evalData.scaFragrance, evalData.scaAroma, evalData.scaFlavor, evalData.scaAftertaste,
-      evalData.scaAcidityQuality, evalData.scaAcidityIntensity, evalData.scaBodyQuality, evalData.scaBodyLevel,
+      evalData.scaAcidityQuality, evalData.scaBodyQuality,
       evalData.scaBalance, evalData.scaOverall, evalData.scaUniformity, evalData.scaCleanCup,
       evalData.scaSweetness, evalData.scaTaintDefects, evalData.scaFaultDefects, evalData.scaFinalScore,
       
@@ -442,7 +438,7 @@ export class RecipeModel {
       
       // Traditional SCA
       evalData.scaFragrance, evalData.scaAroma, evalData.scaFlavor, evalData.scaAftertaste,
-      evalData.scaAcidityQuality, evalData.scaAcidityIntensity, evalData.scaBodyQuality, evalData.scaBodyLevel,
+      evalData.scaAcidityQuality, evalData.scaBodyQuality,
       evalData.scaBalance, evalData.scaOverall, evalData.scaUniformity, evalData.scaCleanCup,
       evalData.scaSweetness, evalData.scaTaintDefects, evalData.scaFaultDefects, evalData.scaFinalScore,
       

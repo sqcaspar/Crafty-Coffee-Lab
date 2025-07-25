@@ -88,50 +88,6 @@ const TraditionalSCAForm: React.FC<TraditionalSCAFormProps> = ({
     );
   };
 
-  // Create cup characteristic input (0-10, 2-point increments)
-  const CupCharacteristicInput: React.FC<{
-    field: keyof TraditionalSCAEvaluation;
-    label: string;
-    description?: string;
-  }> = ({ field, label, description }) => {
-    const fieldValue = (value[field] as number) || 0;
-    
-    return (
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            {label}
-          </label>
-          <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            {fieldValue}
-          </span>
-        </div>
-        {description && (
-          <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
-        )}
-        <div className="flex items-center space-x-4">
-          <span className="text-sm text-gray-500 dark:text-gray-400">0</span>
-          <input
-            type="range"
-            min="0"
-            max="10"
-            step="2"
-            value={fieldValue}
-            onChange={(e) => handleIntegerChange(field, e.target.value)}
-            className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-          />
-          <span className="text-sm text-gray-500 dark:text-gray-400">10</span>
-        </div>
-        <div className="text-xs text-center text-gray-500 dark:text-gray-400">
-          {fieldValue === 10 ? 'Perfect (5/5 cups)' :
-           fieldValue === 8 ? 'Excellent (4/5 cups)' :
-           fieldValue === 6 ? 'Good (3/5 cups)' :
-           fieldValue === 4 ? 'Fair (2/5 cups)' :
-           fieldValue === 2 ? 'Poor (1/5 cups)' : 'None (0/5 cups)'}
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className="space-y-8">
@@ -145,10 +101,10 @@ const TraditionalSCAForm: React.FC<TraditionalSCAFormProps> = ({
         </p>
       </div>
 
-      {/* Quality Attributes Section */}
+      {/* SCA Cupping Protocol Attributes */}
       <div className="space-y-6">
         <h4 className="text-md font-medium text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
-          Quality Attributes (6.00-10.00 points each)
+          SCA Cupping Protocol Attributes (6.00-10.00 points each)
         </h4>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -161,98 +117,55 @@ const TraditionalSCAForm: React.FC<TraditionalSCAFormProps> = ({
           <QualityRangeInput
             field="flavor"
             label="Flavor"
-            description="Combined taste and retronasal aroma perception"
+            description="Combined retronasal aroma + taste while sipping"
           />
           
           <QualityRangeInput
             field="aftertaste"
             label="Aftertaste"
-            description="Length and quality of lingering taste sensations"
+            description="Persistence and quality of flavor after swallowing"
           />
           
-          <div className="space-y-4">
-            <QualityRangeInput
-              field="acidity"
-              label="Acidity (Quality)"
-              description="Pleasant tartness quality"
-            />
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Acidity Intensity
-              </label>
-              <select
-                value={value.acidityIntensity || ''}
-                onChange={(e) => handleFieldChange('acidityIntensity', e.target.value || undefined)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-              >
-                <option value="">Select intensity...</option>
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
-              </select>
-            </div>
-          </div>
+          <QualityRangeInput
+            field="acidity"
+            label="Acidity"
+            description="Perceived brightness or liveliness (not sourness)"
+          />
           
-          <div className="space-y-4">
-            <QualityRangeInput
-              field="body"
-              label="Body (Quality)"
-              description="Tactile feeling and weight in mouth"
-            />
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Body Level
-              </label>
-              <select
-                value={value.bodyLevel || ''}
-                onChange={(e) => handleFieldChange('bodyLevel', e.target.value || undefined)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
-              >
-                <option value="">Select level...</option>
-                <option value="Heavy">Heavy</option>
-                <option value="Medium">Medium</option>
-                <option value="Thin">Thin</option>
-              </select>
-            </div>
-          </div>
+          <QualityRangeInput
+            field="body"
+            label="Body"
+            description="Mouthfeel weight and viscosity"
+          />
           
           <QualityRangeInput
             field="balance"
             label="Balance"
-            description="How flavor, aftertaste, acidity, and body complement each other"
+            description="Harmony between acidity, sweetness, body, and flavor"
+          />
+          
+          <QualityRangeInput
+            field="sweetness"
+            label="Sweetness"
+            description="Gustatory or retronasal perception of sweetness"
+          />
+          
+          <QualityRangeInput
+            field="cleanCup"
+            label="Clean Cup"
+            description="Absence of negative floating or suspended particles, odors"
+          />
+          
+          <QualityRangeInput
+            field="uniformity"
+            label="Uniformity"
+            description="Consistency of key attributes across five individually brewed cups"
           />
           
           <QualityRangeInput
             field="overall"
             label="Overall"
-            description="Final impression score reflecting overall experience"
-          />
-        </div>
-      </div>
-
-      {/* Cup Characteristics Section */}
-      <div className="space-y-6">
-        <h4 className="text-md font-medium text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
-          Cup Characteristics (0-10 points each)
-        </h4>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <CupCharacteristicInput
-            field="uniformity"
-            label="Uniformity"
-            description="Consistency across 5 cups (2 points per uniform cup)"
-          />
-          
-          <CupCharacteristicInput
-            field="cleanCup"
-            label="Clean Cup"
-            description="Freedom from defects (2 points per clean cup)"
-          />
-          
-          <CupCharacteristicInput
-            field="sweetness"
-            label="Sweetness"
-            description="Pleasing fullness and sweetness (2 points per sweet cup)"
+            description="General impression, including additional desirable characteristics"
           />
         </div>
       </div>
@@ -350,12 +263,15 @@ const TraditionalSCAForm: React.FC<TraditionalSCAFormProps> = ({
         {calculatedScore !== null && (
           <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div className="bg-white dark:bg-gray-800 p-3 rounded border">
-              <div className="text-gray-500 dark:text-gray-400">Sum of 10 Attributes</div>
+              <div className="text-gray-500 dark:text-gray-400">Sum of 10 SCA Attributes</div>
               <div className="font-medium">
                 {(((value.fragrance || 6) + (value.flavor || 6) + (value.aftertaste || 6) + 
                    (value.acidity || 6) + (value.body || 6) + (value.balance || 6) + 
                    (value.sweetness || 6) + (value.cleanCup || 6) + (value.uniformity || 6) + 
                    (value.overall || 6))).toFixed(2)}
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Each attribute: 6.00-10.00 points
               </div>
             </div>
             <div className="bg-white dark:bg-gray-800 p-3 rounded border">
@@ -368,9 +284,12 @@ const TraditionalSCAForm: React.FC<TraditionalSCAFormProps> = ({
               </div>
             </div>
             <div className="bg-white dark:bg-gray-800 p-3 rounded border">
-              <div className="text-gray-500 dark:text-gray-400">Final Score</div>
+              <div className="text-gray-500 dark:text-gray-400">Final SCA Score</div>
               <div className={`font-medium ${getScoreColor(calculatedScore, 'sca')}`}>
                 {formatScore(calculatedScore)}
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Range: 60.00-100.00
               </div>
             </div>
           </div>

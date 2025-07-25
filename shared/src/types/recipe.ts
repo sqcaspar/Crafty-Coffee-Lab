@@ -81,23 +81,19 @@ export interface MeasurementsInput extends Omit<Measurements, 'coffeeWaterRatio'
  * Ten individual attributes scored 6.00-10.00 points each, adjusted for defects
  */
 export interface TraditionalSCAEvaluation {
-  // Ten individual attributes (6.00-10.00 points each with 0.25 increments)
+  // Ten SCA 2004 Cupping Protocol attributes (6.00-10.00 points each with 0.25 increments)
   // 6.00=Meets minimum quality, 10.00=Extraordinary quality
-  fragrance?: number;        // F₁: Fragrance/Aroma (combined orthonasal evaluation)
-  aroma?: number;           // F₂: Not used in SCA 2004 (kept for backward compatibility)
-  flavor?: number;          // F₃: Combined taste and retronasal aroma perception
-  aftertaste?: number;      // F₄: Persistence and quality of flavor after swallowing
-  acidity?: number;         // F₅: Perceived brightness or liveliness (6-10)
-  acidityIntensity?: 'High' | 'Medium' | 'Low'; // Acidity level descriptor
-  body?: number;            // F₆: Mouthfeel weight and viscosity (6-10)
-  bodyLevel?: 'Heavy' | 'Medium' | 'Thin'; // Body level descriptor
-  balance?: number;         // F₇: Harmony between acidity, sweetness, body, and flavor
-  overall?: number;         // F₁₀: General impression, including additional desirable characteristics
-  
-  // Additional SCA 2004 attributes (6.00-10.00 points each)
-  uniformity?: number;      // F₉: Consistency across five individually brewed cups
-  cleanCup?: number;        // F₈: Absence of negative floating or suspended particles, odors
+  fragrance?: number;        // F₁: Orthonasal smell of grounds (fragrance) and brewed coffee (aroma)
+  aroma?: number;           // Deprecated: Not used in SCA 2004 (kept for backward compatibility)
+  flavor?: number;          // F₂: Combined retronasal aroma + taste while sipping
+  aftertaste?: number;      // F₃: Persistence and quality of flavor after swallowing
+  acidity?: number;         // F₄: Perceived brightness or liveliness (not sourness)
+  body?: number;            // F₅: Mouthfeel weight and viscosity
+  balance?: number;         // F₆: Harmony between acidity, sweetness, body, and flavor
   sweetness?: number;       // F₇: Gustatory or retronasal perception of sweetness
+  cleanCup?: number;        // F₈: Absence of negative floating or suspended particles, odors
+  uniformity?: number;      // F₉: Consistency of key attributes across five individually brewed cups
+  overall?: number;         // F₁₀: General impression, including additional desirable characteristics
   
   // Defect penalties (points deducted based on affected cups)
   taintDefects?: number;    // Points deducted: 2 × number of tainted cups
