@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { SensationRecord, EvaluationSystem } from 'coffee-tracker-shared';
 import TraditionalSCAForm from '../forms/TraditionalSCAForm';
 import CVAAffectiveForm from '../forms/CVAAffectiveForm';
+import CVADescriptiveForm from '../forms/CVADescriptiveForm';
 
 // Legacy TastingNotesPanel interface for backwards compatibility
 export interface TastingNotesData {
@@ -102,6 +103,17 @@ const TabbedEvaluationPanel: React.FC<TabbedEvaluationPanelProps> = ({
           >
             CVA Affective Scoring
           </button>
+          
+          <button
+            onClick={() => handleTabChange('cva-descriptive')}
+            className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'cva-descriptive'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            CVA Descriptive Assessment
+          </button>
         </nav>
       </div>
 
@@ -143,10 +155,17 @@ const TabbedEvaluationPanel: React.FC<TabbedEvaluationPanelProps> = ({
         )}
         
         {activeTab === 'cva-descriptive' && (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-            <p>CVA Descriptive Assessment</p>
-            <p className="text-sm mt-2">Component under development</p>
-          </div>
+          <CVADescriptiveForm
+            value={value.cvaDescriptive || {}}
+            onChange={(updatedCVA) => {
+              const updatedValue = {
+                ...value,
+                cvaDescriptive: updatedCVA
+              };
+              onChange(updatedValue);
+            }}
+            onBlur={onBlur}
+          />
         )}
       </div>
     </div>

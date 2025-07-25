@@ -104,24 +104,43 @@ export interface TraditionalSCAEvaluation {
 }
 
 /**
- * CVA Descriptive Assessment (0-15 intensity scale)
- * Measures strength/intensity of sensory perceptions
+ * CVA Descriptive Assessment (SCA Standard 103-P/2024)
+ * Builds objective sensory fingerprint using 0-15 intensity scales and CATA descriptors
+ * Does not compute a final quality score - focuses on sensory profile mapping
  */
 export interface CVADescriptiveAssessment {
-  // Intensity ratings (0-15 scale: 0=None, 5-10=Medium, 15=Extremely High)
-  fragranceIntensity?: number;    // Dry coffee fragrance intensity
-  aromaIntensity?: number;        // Wet coffee aroma intensity
-  flavorIntensity?: number;       // Combined taste and retronasal intensity
-  aftertasteIntensity?: number;   // Lingering sensation intensity
-  acidityIntensity?: number;      // Sourness perception intensity
-  sweetnessIntensity?: number;    // Sweet taste/aroma intensity
-  mouthfeelIntensity?: number;    // Tactile sensation intensity
+  // Seven cupping sections with 0-15 intensity ratings (0=None, 15=Very High)
+  fragrance?: number;     // Orthonasal olfaction: Smell of dry grounds before brewing
+  aroma?: number;         // Orthonasal olfaction: Smell of brew at aroma break & crust removal
+  flavor?: number;        // Integrated gustatory & retronasal: Combined taste + retronasal smell in mouth
+  aftertaste?: number;    // Integrated gustatory & retronasal: Sensations remaining after swallowing
+  acidity?: number;       // Gustatory: Perceived sourness character & intensity
+  sweetness?: number;     // Gustatory & retronasal: Perceived sweetness impression
+  mouthfeel?: number;     // Tactile: Viscosity, texture, astringency, etc.
   
-  // Check-All-That-Apply (CATA) descriptor selections with limits
-  olfactoryDescriptors?: string[];    // Up to 5 from predefined flavor categories
-  retronasalDescriptors?: string[];   // Up to 5 flavor/aftertaste descriptors
-  mainTastes?: string[];              // Up to 2 from: salty, sour, sweet, bitter, umami
-  mouthfeelDescriptors?: string[];    // Up to 2: metallic, rough, oily, smooth, mouth-drying
+  // CATA Descriptor Arrays (Check-All-That-Apply with SCA-defined limits)
+  
+  // Olfactory CATA (15 categories) - Combined limit: Fragrance + Aroma ≤5 total selections
+  fragranceAromaDescriptors?: string[];  // From olfactory list: Floral, Berry, Dried Fruit, etc.
+  
+  // Retronasal CATA (15 categories) - Combined limit: Flavor + Aftertaste ≤5 total selections  
+  flavorAftertasteDescriptors?: string[];  // From olfactory list: Floral, Berry, Dried Fruit, etc.
+  
+  // Main Tastes CATA (5 categories) - Limit: ≤2 selections
+  mainTastes?: string[];  // Salty, Sour, Sweet, Bitter, Umami
+  
+  // Mouthfeel CATA (5 categories) - Limit: ≤2 selections
+  mouthfeelDescriptors?: string[];  // Metallic, Rough, Oily, Smooth, Mouth-Drying
+  
+  // Free-text descriptors (when CATA categories insufficient)
+  acidityDescriptors?: string;      // Free text: e.g., "tartaric, bright"
+  sweetnessDescriptors?: string;    // Free text: e.g., "cane sugar, caramel"
+  additionalNotes?: string;         // Additional descriptors not captured above
+  
+  // Assessment metadata
+  roastLevel?: string;              // Visual roast estimate (e.g., "Light (Agtron 58)")
+  assessmentDate?: string;          // ISO date string
+  assessorId?: string;              // Cupper identification
 }
 
 /**
