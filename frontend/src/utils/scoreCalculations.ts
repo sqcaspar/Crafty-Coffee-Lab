@@ -48,24 +48,24 @@ export function calculateSCAScore(evaluation: TraditionalSCAEvaluation): number 
 
 /**
  * CVA Affective Assessment Score Calculation
- * Formula: S = 6.25 × (Σhi) + 37.5 - 2u - 4d
+ * Official Formula: S = 0.65625 × Σhi + 52.75 - 2u - 4d
  * Where:
  * - S = Final cupping score (rounded to nearest 0.25)
- * - Σhi = Sum of all eight 9-point section scores
+ * - Σhi = Sum of all eight 9-point section scores (1-9 scale, 5=neutral)
  * - u = Number of non-uniform cups
  * - d = Number of defective cups
  */
 export function calculateCVAScore(evaluation: CVAAffectiveAssessment): number {
-  // All eight sections (1-9 points each)
+  // All eight sections (1-9 points each, default to 5 = neutral)
   const sectionScores = [
-    evaluation.fragrance || 0,
-    evaluation.aroma || 0,
-    evaluation.flavor || 0,
-    evaluation.aftertaste || 0,
-    evaluation.acidity || 0,
-    evaluation.sweetness || 0,
-    evaluation.mouthfeel || 0,
-    evaluation.overall || 0,
+    evaluation.fragrance || 5,
+    evaluation.aroma || 5,
+    evaluation.flavor || 5,
+    evaluation.aftertaste || 5,
+    evaluation.acidity || 5,
+    evaluation.sweetness || 5,
+    evaluation.mouthfeel || 5,
+    evaluation.overall || 5,
   ];
 
   // Sum of all section scores (Σhi)
@@ -75,10 +75,10 @@ export function calculateCVAScore(evaluation: CVAAffectiveAssessment): number {
   const nonUniformCups = evaluation.nonUniformCups || 0; // u
   const defectiveCups = evaluation.defectiveCups || 0; // d
 
-  // CVA Formula: S = 6.25 × (Σhi) + 37.5 - 2u - 4d
-  const cvaScore = (6.25 * sumOfScores) + 37.5 - (2 * nonUniformCups) - (4 * defectiveCups);
+  // Official CVA Formula: S = 0.65625 × Σhi + 52.75 - 2u - 4d
+  const cvaScore = (0.65625 * sumOfScores) + 52.75 - (2 * nonUniformCups) - (4 * defectiveCups);
 
-  // Round to nearest 0.25 and ensure within valid range (58-100)
+  // Round to nearest 0.25 and ensure within valid range
   return Math.max(58, Math.min(100, Math.round(cvaScore * 4) / 4));
 }
 
@@ -139,7 +139,7 @@ export function getSCAScoreInterpretation(score: number): string {
 
 /**
  * Get CVA score interpretation
- * Provide qualitative description of CVA score ranges
+ * Provide qualitative description of CVA Affective Assessment score ranges
  */
 export function getCVAScoreInterpretation(score: number): string {
   if (score >= 90) return 'Exceptional Quality (90+)';

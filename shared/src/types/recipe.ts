@@ -125,27 +125,27 @@ export interface CVADescriptiveAssessment {
 }
 
 /**
- * CVA Affective Assessment (1-9 quality scale)
- * Measures impression of quality across sensory attributes
+ * CVA Affective Assessment (1-9 impression scale)
+ * Measures impression of quality using hedonic scale where 5 = neutral liking
  */
 export interface CVAAffectiveAssessment {
-  // Quality impression ratings (1-9 scale)
-  // 1=Extremely Low, 5=Neutral, 9=Extremely High impression of quality
-  fragrance?: number;      // Fragrance quality impression
-  aroma?: number;          // Aroma quality impression
-  flavor?: number;         // Flavor quality impression
-  aftertaste?: number;     // Aftertaste quality impression
-  acidity?: number;        // Acidity quality impression
-  sweetness?: number;      // Sweetness quality impression
-  mouthfeel?: number;      // Mouthfeel quality impression
-  overall?: number;        // Overall quality impression
+  // Eight evaluation sections (1-9 scale: ①Extremely low → ⑤Neither high nor low → ⑨Extremely high)
+  // 5 = neutral liking (neither high nor low impression of quality)
+  fragrance?: number;      // Fragrance impression of quality
+  aroma?: number;          // Aroma impression of quality  
+  flavor?: number;         // Flavor impression of quality
+  aftertaste?: number;     // Aftertaste impression of quality
+  acidity?: number;        // Acidity impression of quality
+  sweetness?: number;      // Sweetness impression of quality
+  mouthfeel?: number;      // Mouthfeel impression of quality
+  overall?: number;        // Overall impression of quality
   
-  // Cup uniformity and defect counts (0-5 cups each)
-  nonUniformCups?: number; // Number of non-uniform cups (penalty factor)
-  defectiveCups?: number;  // Number of defective cups (penalty factor)
+  // Cup defects and uniformity (0-5 cups each)
+  nonUniformCups?: number; // Cups exhibiting qualitatively different characteristics
+  defectiveCups?: number;  // Cups scored as moldy, phenolic, or potato
   
-  // Calculated CVA score using formula: S = 6.25 × (Σhi) + 37.5 - 2u - 4d
-  cvaScore?: number;       // Final score (58.00-100.00, rounded to nearest 0.25)
+  // Calculated CVA score using official formula: S = 0.65625 × Σhi + 52.75 - 2u - 4d
+  cvaScore?: number;       // Final CVA Affective Score (rounded to nearest 0.25)
 }
 
 /**

@@ -46,7 +46,7 @@ const CVAAffectiveForm: React.FC<CVAAffectiveFormProps> = ({
     label: string;
     description?: string;
   }> = ({ field, label, description }) => {
-    const fieldValue = (value[field] as number) || 5;
+    const fieldValue = (value[field] as number) ?? 5;
     
     return (
       <div className="space-y-2">
@@ -139,14 +139,14 @@ const CVAAffectiveForm: React.FC<CVAAffectiveFormProps> = ({
           CVA Affective Assessment
         </h3>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Measures overall quality impression across sensory attributes. Rate each section 1-9 based on quality, not intensity.
+          Uses 1-9 hedonic scale where 5 = neutral liking. Evaluates impression of quality across eight sections.
         </p>
       </div>
 
-      {/* Quality Impression Ratings Section */}
+      {/* CVA Affective Sections */}
       <div className="space-y-6">
         <h4 className="text-md font-medium text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
-          Quality Impression Ratings (1-9 scale)
+          CVA Affective Sections (1-9 scale: 5 = neutral liking)
         </h4>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
