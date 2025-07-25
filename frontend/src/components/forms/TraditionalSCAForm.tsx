@@ -138,10 +138,10 @@ const TraditionalSCAForm: React.FC<TraditionalSCAFormProps> = ({
       {/* Header with SCA logo/branding */}
       <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-          Traditional SCA Cupping Form
+          SCA Cupping Protocol Form
         </h3>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Based on SCA 2004 cupping protocol. Each quality attribute rated 6.00-10.00 with 0.25 increments.
+          Based on SCA 2004 Cupping Protocol. Ten sensory attributes rated 6.00-10.00 with 0.25 increments, adjusted for defects.
         </p>
       </div>
 
@@ -154,14 +154,8 @@ const TraditionalSCAForm: React.FC<TraditionalSCAFormProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <QualityRangeInput
             field="fragrance"
-            label="Fragrance/Aroma (Dry)"
-            description="Aromatic aspects of dry coffee grounds"
-          />
-          
-          <QualityRangeInput
-            field="aroma"
-            label="Aroma (Wet)"
-            description="Aromatic aspects of wet coffee infusion"
+            label="Fragrance/Aroma"
+            description="Orthonasal smell of grounds (fragrance) and brewed coffee (aroma)"
           />
           
           <QualityRangeInput
@@ -272,54 +266,60 @@ const TraditionalSCAForm: React.FC<TraditionalSCAFormProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Taint Defects (-2 points per affected cup)
+              Tainted Cups (-2 points per cup)
             </label>
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-              Off-flavors that don't render the cup undrinkable
+              Cups with off-flavors that don't render them undrinkable (e.g., papery, medicinal)
             </p>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-500 dark:text-gray-400">0</span>
               <input
                 type="range"
                 min="0"
-                max="20"
-                step="2"
-                value={value.taintDefects || 0}
-                onChange={(e) => handleIntegerChange('taintDefects', e.target.value)}
+                max="5"
+                step="1"
+                value={Math.floor((value.taintDefects || 0) / 2)}
+                onChange={(e) => handleIntegerChange('taintDefects', (parseInt(e.target.value) * 2).toString())}
                 className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
               />
-              <span className="text-sm text-gray-500 dark:text-gray-400">20</span>
-              <div className="w-12 text-center">
-                <span className="text-lg font-semibold text-red-600 dark:text-red-400">
-                  -{value.taintDefects || 0}
+              <span className="text-sm text-gray-500 dark:text-gray-400">5</span>
+              <div className="w-16 text-center">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  {Math.floor((value.taintDefects || 0) / 2)} cup{Math.floor((value.taintDefects || 0) / 2) !== 1 ? 's' : ''}
                 </span>
+                <div className="text-lg font-semibold text-red-600 dark:text-red-400">
+                  -{value.taintDefects || 0}
+                </div>
               </div>
             </div>
           </div>
           
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Fault Defects (-4 points per affected cup)
+              Faulty Cups (-4 points per cup)
             </label>
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-              Severe off-flavors that render the cup undrinkable
+              Cups with severe off-flavors that render them undrinkable (e.g., moldy, phenolic)
             </p>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-500 dark:text-gray-400">0</span>
               <input
                 type="range"
                 min="0"
-                max="40"
-                step="4"
-                value={value.faultDefects || 0}
-                onChange={(e) => handleIntegerChange('faultDefects', e.target.value)}
+                max="5"
+                step="1"
+                value={Math.floor((value.faultDefects || 0) / 4)}
+                onChange={(e) => handleIntegerChange('faultDefects', (parseInt(e.target.value) * 4).toString())}
                 className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
               />
-              <span className="text-sm text-gray-500 dark:text-gray-400">40</span>
-              <div className="w-12 text-center">
-                <span className="text-lg font-semibold text-red-600 dark:text-red-400">
-                  -{value.faultDefects || 0}
+              <span className="text-sm text-gray-500 dark:text-gray-400">5</span>
+              <div className="w-16 text-center">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  {Math.floor((value.faultDefects || 0) / 4)} cup{Math.floor((value.faultDefects || 0) / 4) !== 1 ? 's' : ''}
                 </span>
+                <div className="text-lg font-semibold text-red-600 dark:text-red-400">
+                  -{value.faultDefects || 0}
+                </div>
               </div>
             </div>
           </div>
@@ -348,19 +348,14 @@ const TraditionalSCAForm: React.FC<TraditionalSCAFormProps> = ({
         </div>
         
         {calculatedScore !== null && (
-          <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div className="bg-white dark:bg-gray-800 p-3 rounded border">
-              <div className="text-gray-500 dark:text-gray-400">Quality Attributes</div>
+              <div className="text-gray-500 dark:text-gray-400">Sum of 10 Attributes</div>
               <div className="font-medium">
-                {(((value.fragrance || 0) + (value.aroma || 0) + (value.flavor || 0) + 
-                   (value.aftertaste || 0) + (value.acidity || 0) + (value.body || 0) + 
-                   (value.balance || 0) + (value.overall || 0))).toFixed(2)}
-              </div>
-            </div>
-            <div className="bg-white dark:bg-gray-800 p-3 rounded border">
-              <div className="text-gray-500 dark:text-gray-400">Cup Characteristics</div>
-              <div className="font-medium">
-                {((value.uniformity || 0) + (value.cleanCup || 0) + (value.sweetness || 0)).toFixed(2)}
+                {(((value.fragrance || 6) + (value.flavor || 6) + (value.aftertaste || 6) + 
+                   (value.acidity || 6) + (value.body || 6) + (value.balance || 6) + 
+                   (value.sweetness || 6) + (value.cleanCup || 6) + (value.uniformity || 6) + 
+                   (value.overall || 6))).toFixed(2)}
               </div>
             </div>
             <div className="bg-white dark:bg-gray-800 p-3 rounded border">
@@ -368,9 +363,12 @@ const TraditionalSCAForm: React.FC<TraditionalSCAFormProps> = ({
               <div className="font-medium text-red-600 dark:text-red-400">
                 -{((value.taintDefects || 0) + (value.faultDefects || 0)).toFixed(2)}
               </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {Math.floor((value.taintDefects || 0) / 2)} taint + {Math.floor((value.faultDefects || 0) / 4)} fault
+              </div>
             </div>
             <div className="bg-white dark:bg-gray-800 p-3 rounded border">
-              <div className="text-gray-500 dark:text-gray-400">Total Score</div>
+              <div className="text-gray-500 dark:text-gray-400">Final Score</div>
               <div className={`font-medium ${getScoreColor(calculatedScore, 'sca')}`}>
                 {formatScore(calculatedScore)}
               </div>

@@ -6,42 +6,44 @@
 import type { TraditionalSCAEvaluation, CVAAffectiveAssessment } from 'coffee-tracker-shared';
 
 /**
- * Traditional SCA Cupping Form Score Calculation
- * Sum of all quality attributes + uniformity + clean cup + sweetness - defects
+ * SCA Cupping Protocol Score Calculation (2004 SCA Protocol)
+ * Formula: Final Score = Σ(F₁...F₁₀) - (2 × Tainted cups) - (4 × Faulty cups)
+ * Where F₁...F₁₀ are the ten individual attribute scores (6.00-10.00 each)
  */
 export function calculateSCAScore(evaluation: TraditionalSCAEvaluation): number {
-  // Quality attributes (6-10 points each)
-  const qualityAttributes = [
-    evaluation.fragrance || 0,
-    evaluation.aroma || 0,
-    evaluation.flavor || 0,
-    evaluation.aftertaste || 0,
-    evaluation.acidity || 0,
-    evaluation.body || 0,
-    evaluation.balance || 0,
-    evaluation.overall || 0,
+  // Ten individual attributes (6.00-10.00 points each)
+  // F₁ through F₁₀ in the SCA formula (note: aroma field is not used in SCA 2004)
+  const attributes = [
+    evaluation.fragrance || 6,        // F₁: Fragrance/Aroma (combined orthonasal evaluation)
+    evaluation.flavor || 6,           // F₂: Combined taste and retronasal aroma perception
+    evaluation.aftertaste || 6,       // F₃: Persistence and quality of flavor after swallowing
+    evaluation.acidity || 6,          // F₄: Perceived brightness or liveliness
+    evaluation.body || 6,             // F₅: Mouthfeel weight and viscosity
+    evaluation.balance || 6,          // F₆: Harmony between acidity, sweetness, body, and flavor
+    evaluation.sweetness || 6,        // F₇: Gustatory or retronasal perception of sweetness
+    evaluation.cleanCup || 6,         // F₈: Absence of negative particles, odors
+    evaluation.uniformity || 6,       // F₉: Consistency across five cups
+    evaluation.overall || 6,          // F₁₀: General impression, additional desirable characteristics
   ];
 
-  // Cup characteristics (0-10 points each)
-  const cupCharacteristics = [
-    evaluation.uniformity || 0,
-    evaluation.cleanCup || 0,
-    evaluation.sweetness || 0,
-  ];
+  // Sum of all ten attributes (Σ F₁...F₁₀)
+  const attributeSum = attributes.reduce((sum, score) => sum + score, 0);
 
-  // Defect penalties (negative points)
-  const taintPenalty = evaluation.taintDefects || 0; // -2 points per affected cup
-  const faultPenalty = evaluation.faultDefects || 0; // -4 points per affected cup
+  // Defect penalties based on number of cups affected
+  // T = number of tainted cups × 2
+  // D = number of faulty cups × 4
+  const taintedCups = Math.floor((evaluation.taintDefects || 0) / 2); // Convert points back to cups
+  const faultyCups = Math.floor((evaluation.faultDefects || 0) / 4);   // Convert points back to cups
+  
+  const taintPenalty = taintedCups * 2;
+  const faultPenalty = faultyCups * 4;
 
-  // Calculate total score
-  const qualityTotal = qualityAttributes.reduce((sum, score) => sum + score, 0);
-  const cupTotal = cupCharacteristics.reduce((sum, score) => sum + score, 0);
-  const defectTotal = taintPenalty + faultPenalty;
+  // SCA Formula: Final Score = Σ(F₁...F₁₀) - (2 × Tainted cups) - (4 × Faulty cups)
+  const finalScore = attributeSum - taintPenalty - faultPenalty;
 
-  const finalScore = qualityTotal + cupTotal - defectTotal;
-
-  // Round to nearest 0.25 and ensure within valid range (36-100)
-  return Math.max(36, Math.min(100, Math.round(finalScore * 4) / 4));
+  // Round to nearest 0.25 and ensure within valid range
+  // Minimum possible: 10 attributes × 6.00 = 60, maximum: 10 attributes × 10.00 = 100
+  return Math.max(60, Math.min(100, Math.round(finalScore * 4) / 4));
 }
 
 /**
@@ -188,7 +190,7 @@ export function formatScore(score: number): string {
  * Validate score range for SCA system
  */
 export function isValidSCAScore(score: number): boolean {
-  return score >= 36 && score <= 100;
+  return score >= 60 && score <= 100;
 }
 
 /**
@@ -202,8 +204,8 @@ export function isValidCVAScore(score: number): boolean {
  * Calculate theoretical maximum score for SCA evaluation
  */
 export function getSCAMaximumScore(): number {
-  // 8 quality attributes × 10 points + 3 cup characteristics × 10 points = 110 points
-  return 110;
+  // 10 attributes × 10 points each = 100 points maximum (before defects)
+  return 100;
 }
 
 /**

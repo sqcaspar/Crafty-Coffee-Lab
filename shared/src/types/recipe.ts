@@ -77,34 +77,34 @@ export interface MeasurementsInput extends Omit<Measurements, 'coffeeWaterRatio'
 }
 
 /**
- * Traditional SCA Cupping Form Evaluation (6-10 point scale)
- * Based on SCA 2004 cupping protocol with specific quality descriptors
+ * SCA Cupping Protocol Evaluation (2004 SCA Protocol)
+ * Ten individual attributes scored 6.00-10.00 points each, adjusted for defects
  */
 export interface TraditionalSCAEvaluation {
-  // Quality attributes (6.00-10.00 points each with 0.25 increments)
-  // 6.00=Good, 7.00=Very Good, 8.00=Excellent, 9.00=Outstanding, 10.00=Perfect
-  fragrance?: number;        // Fragrance/Aroma dry evaluation
-  aroma?: number;           // Wet aroma evaluation
-  flavor?: number;          // Combined taste and retronasal perception
-  aftertaste?: number;      // Lingering taste sensations
-  acidity?: number;         // Quality of acidity (6-10)
+  // Ten individual attributes (6.00-10.00 points each with 0.25 increments)
+  // 6.00=Meets minimum quality, 10.00=Extraordinary quality
+  fragrance?: number;        // F₁: Fragrance/Aroma (combined orthonasal evaluation)
+  aroma?: number;           // F₂: Not used in SCA 2004 (kept for backward compatibility)
+  flavor?: number;          // F₃: Combined taste and retronasal aroma perception
+  aftertaste?: number;      // F₄: Persistence and quality of flavor after swallowing
+  acidity?: number;         // F₅: Perceived brightness or liveliness (6-10)
   acidityIntensity?: 'High' | 'Medium' | 'Low'; // Acidity level descriptor
-  body?: number;            // Quality of body/mouthfeel (6-10)
+  body?: number;            // F₆: Mouthfeel weight and viscosity (6-10)
   bodyLevel?: 'Heavy' | 'Medium' | 'Thin'; // Body level descriptor
-  balance?: number;         // Overall harmony of attributes
-  overall?: number;         // Final impression score
+  balance?: number;         // F₇: Harmony between acidity, sweetness, body, and flavor
+  overall?: number;         // F₁₀: General impression, including additional desirable characteristics
   
-  // Cup characteristics (2 points per cup, maximum 10 points across 5 cups)
-  uniformity?: number;      // Consistency across cups (0-10)
-  cleanCup?: number;        // Freedom from defects (0-10)
-  sweetness?: number;       // Sweet taste perception (0-10)
+  // Additional SCA 2004 attributes (6.00-10.00 points each)
+  uniformity?: number;      // F₉: Consistency across five individually brewed cups
+  cleanCup?: number;        // F₈: Absence of negative floating or suspended particles, odors
+  sweetness?: number;       // F₇: Gustatory or retronasal perception of sweetness
   
-  // Defect penalties (negative points)
-  taintDefects?: number;    // -2 points per affected cup
-  faultDefects?: number;    // -4 points per affected cup
+  // Defect penalties (points deducted based on affected cups)
+  taintDefects?: number;    // Points deducted: 2 × number of tainted cups
+  faultDefects?: number;    // Points deducted: 4 × number of faulty cups
   
   // Calculated total score
-  finalScore?: number;      // Sum of all attributes minus defects (36-100 range)
+  finalScore?: number;      // Final Score = Σ(F₁...F₁₀) - (2×Tainted cups) - (4×Faulty cups)
 }
 
 /**
