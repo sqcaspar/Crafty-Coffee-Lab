@@ -18,7 +18,7 @@ export const FilteringToolSchema = z.nativeEnum(FilteringTool);
 export const OriginFieldSchema = CoffeeOriginSchema;
 export const ProcessingMethodFieldSchema = ProcessingMethodSchema;
 export const AltitudeFieldSchema = z.number().int().min(0, 'Altitude must be positive').max(10000, 'Altitude must be reasonable').optional();
-export const RoastingDateFieldSchema = z.string().datetime().optional();
+export const RoastingDateFieldSchema = z.string().optional();
 export const RoastingLevelFieldSchema = RoastingLevelSchema.optional();
 
 // Bean Information validation schema
@@ -95,19 +95,19 @@ export const MeasurementsInputSchema = z.object({
 });
 
 // Individual Sensation Record field schemas for isolated validation
-export const OverallImpressionFieldSchema = z.number().int().min(1, 'Overall impression must be at least 1').max(10, 'Overall impression must be at most 10');
-export const AcidityFieldSchema = z.number().int().min(1, 'Acidity must be at least 1').max(10, 'Acidity must be at most 10').optional();
-export const BodyFieldSchema = z.number().int().min(1, 'Body must be at least 1').max(10, 'Body must be at most 10').optional();
-export const SweetnessFieldSchema = z.number().int().min(1, 'Sweetness must be at least 1').max(10, 'Sweetness must be at most 10').optional();
-export const FlavorFieldSchema = z.number().int().min(1, 'Flavor must be at least 1').max(10, 'Flavor must be at most 10').optional();
-export const AftertasteFieldSchema = z.number().int().min(1, 'Aftertaste must be at least 1').max(10, 'Aftertaste must be at most 10').optional();
-export const BalanceFieldSchema = z.number().int().min(1, 'Balance must be at least 1').max(10, 'Balance must be at most 10').optional();
+export const OverallImpressionFieldSchema = z.union([z.number(), z.string()]).optional();
+export const AcidityFieldSchema = z.union([z.number(), z.string()]).optional();
+export const BodyFieldSchema = z.union([z.number(), z.string()]).optional();
+export const SweetnessFieldSchema = z.union([z.number(), z.string()]).optional();
+export const FlavorFieldSchema = z.union([z.number(), z.string()]).optional();
+export const AftertasteFieldSchema = z.union([z.number(), z.string()]).optional();
+export const BalanceFieldSchema = z.union([z.number(), z.string()]).optional();
 export const TastingNotesFieldSchema = z.string().max(2000, 'Tasting notes must be 2000 characters or less').optional();
 
 // SCA/CVA Evaluation System Validation Schemas
 
 // Evaluation System enum schema
-export const EvaluationSystemSchema = z.enum(['traditional-sca', 'cva-descriptive', 'cva-affective', 'legacy']);
+export const EvaluationSystemSchema = z.enum(['traditional-sca', 'cva-descriptive', 'cva-affective', 'quick-tasting', 'legacy']);
 
 // Traditional SCA Cupping Form validation (6-10 point scale with 0.25 increments)
 export const TraditionalSCAEvaluationSchema = z.object({
@@ -229,13 +229,13 @@ export const SensationRecordWithEvaluationSchema = z.object({
   evaluationSystem: EvaluationSystemSchema.optional(),
   
   // Legacy fields (maintain backwards compatibility)
-  overallImpression: z.number().int().min(1, 'Overall impression must be at least 1').max(10, 'Overall impression must be at most 10').optional(),
-  acidity: z.number().int().min(1, 'Acidity must be at least 1').max(10, 'Acidity must be at most 10').optional(),
-  body: z.number().int().min(1, 'Body must be at least 1').max(10, 'Body must be at most 10').optional(),
-  sweetness: z.number().int().min(1, 'Sweetness must be at least 1').max(10, 'Sweetness must be at most 10').optional(),
-  flavor: z.number().int().min(1, 'Flavor must be at least 1').max(10, 'Flavor must be at most 10').optional(),
-  aftertaste: z.number().int().min(1, 'Aftertaste must be at least 1').max(10, 'Aftertaste must be at most 10').optional(),
-  balance: z.number().int().min(1, 'Balance must be at least 1').max(10, 'Balance must be at most 10').optional(),
+  overallImpression: OverallImpressionFieldSchema,
+  acidity: AcidityFieldSchema,
+  body: BodyFieldSchema,
+  sweetness: SweetnessFieldSchema,
+  flavor: FlavorFieldSchema,
+  aftertaste: AftertasteFieldSchema,
+  balance: BalanceFieldSchema,
   tastingNotes: z.string().max(2000, 'Tasting notes must be 2000 characters or less').optional(),
   
   // New evaluation systems
