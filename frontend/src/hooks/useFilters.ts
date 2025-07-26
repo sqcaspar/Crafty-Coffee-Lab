@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { RecipeSummary } from '../../../shared/src/types/recipe';
+import { RecipeSummary } from '../shared/types/recipe';
 
 export interface FilterOptions {
   // Origin filter

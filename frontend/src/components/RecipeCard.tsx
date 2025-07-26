@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { RecipeSummary } from '../../../shared/src/types/recipe';
+import { RecipeSummary } from '../shared/types/recipe';
 import { formatBrewingMethod, formatRelativeDate } from '../utils/recipeFormatters';
 import { comparisonService } from '../services/comparisonService';
 import { useToast } from './ui/ToastContainer';

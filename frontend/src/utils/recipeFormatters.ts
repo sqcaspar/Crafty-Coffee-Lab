@@ -1,4 +1,4 @@
-import { BrewingMethod, RoastingLevel } from '../../../shared/src/types/recipe';
+import { BrewingMethod, RoastingLevel } from '../shared/types/recipe';
 
 // Helper function to format brewing method display
 export const formatBrewingMethod = (method: BrewingMethod | undefined): string => {

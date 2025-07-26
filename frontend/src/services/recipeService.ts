@@ -1,4 +1,4 @@
-import { Recipe, RecipeInput, RecipeSummary } from '../../../shared/src/types/recipe';
+import { Recipe, RecipeInput, RecipeSummary } from '../shared/types/recipe';
 import { apiClient, ApiResponse } from './api';
 
 export interface RecipeServiceOptions {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { RecipeSummary } from '../../../shared/src/types/recipe';
+import { RecipeSummary } from '../shared/types/recipe';
 import { ShareOptions, recipeSharingService } from '../services/recipeSharingService';
 import { useToast } from './ui/ToastContainer';
 import LoadingSpinner from './ui/LoadingSpinner';

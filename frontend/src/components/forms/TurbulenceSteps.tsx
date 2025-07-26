@@ -1,5 +1,5 @@
 import React from 'react';
-import type { TurbulenceStep } from '../../../../shared/src/types/recipe';
+import type { TurbulenceStep } from '../../shared/types/recipe';
 
 interface TurbulenceStepsProps {
   value: TurbulenceStep[];

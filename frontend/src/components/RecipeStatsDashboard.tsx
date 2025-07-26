@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Recipe, RecipeSummary } from '../../../shared/src/types/recipe';
+import { Recipe, RecipeSummary } from '../shared/types/recipe';
 import { recipeService } from '../services/recipeService';
 import { recipeCloneService } from '../services/recipeCloneService';
 import { RatingHistoryChart, generateSampleRatingData } from './ui/RatingHistoryChart';

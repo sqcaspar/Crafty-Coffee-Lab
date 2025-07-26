@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { RecipeSummary } from '../../../shared/src/types/recipe';
+import { RecipeSummary } from '../shared/types/recipe';
 import { recipeService } from '../services/recipeService';
 import { useToast } from './ui/ToastContainer';
 import { useSearch } from '../hooks/useSearch';

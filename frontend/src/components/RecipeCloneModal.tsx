@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Recipe, RecipeSummary } from '../../../shared/src/types/recipe';
+import { Recipe, RecipeSummary } from '../shared/types/recipe';
 import { 
   recipeCloneService, 
   CloneOptions, 

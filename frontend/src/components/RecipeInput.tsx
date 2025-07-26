@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { BeanInfo, BrewingParameters, TurbulenceInfo, MeasurementsInput, SensationRecord, RoastingLevel, BrewingMethod, TurbulenceStep } from '../../../shared/src/types/recipe';
+import { BeanInfo, BrewingParameters, TurbulenceInfo, MeasurementsInput, SensationRecord, RoastingLevel, BrewingMethod, TurbulenceStep } from '../shared/types/recipe';
 import { COFFEE_ORIGIN_GROUPS, CoffeeOrigin } from '../../../shared/src/constants/coffeeOrigins';
 import { PROCESSING_METHOD_OPTIONS, ProcessingMethod } from '../../../shared/src/constants/processingMethods';
 import { WATER_TEMPERATURE_OPTIONS, parseTemperature } from '../../../shared/src/constants/waterTemperature';

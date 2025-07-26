@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Recipe } from '../../../shared/src/types/recipe';
+import { Recipe } from '../shared/types/recipe';
 import { 
   comparisonService, 
   ComparisonItem, 

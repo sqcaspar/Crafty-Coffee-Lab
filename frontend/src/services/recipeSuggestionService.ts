@@ -1,4 +1,4 @@
-import { Recipe, RecipeSummary, BrewingMethod, RoastingLevel } from '../../../shared/src/types/recipe';
+import { Recipe, RecipeSummary, BrewingMethod, RoastingLevel } from '../shared/types/recipe';
 import { recipeService } from './recipeService';
 import { recipeCloneService } from './recipeCloneService';
 

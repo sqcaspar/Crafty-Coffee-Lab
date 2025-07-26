@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Recipe, RoastingLevel, BrewingMethod } from '../../../shared/src/types/recipe';
+import { Recipe, RoastingLevel, BrewingMethod } from '../shared/types/recipe';
 import { recipeService } from '../services/recipeService';
 import { exportService, ExportFormat } from '../services/exportService';
 import { useToast } from './ui/ToastContainer';

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RecipeSummary } from '../../../shared/src/types/recipe';
+import { RecipeSummary } from '../shared/types/recipe';
 import { formatBrewingMethod } from '../utils/recipeFormatters';
 import LoadingSpinner from './ui/LoadingSpinner';
 
