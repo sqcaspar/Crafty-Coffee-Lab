@@ -1,25 +1,19 @@
 import { v4 as uuidv4 } from 'uuid';
-import { db } from '../connection.js';
+import { supabase } from '../supabase.js';
 import type { Collection, CollectionStats, CollectionColor, CollectionInput, CollectionUpdate } from 'coffee-tracker-shared';
-
-interface CollectionRow {
-  collection_id: string;
-  name: string;
-  description: string | null;
-  color: string;
-  is_private: boolean; // PostgreSQL stores boolean as boolean
-  is_default: boolean; // PostgreSQL stores boolean as boolean
-  tags: string | null;
-  date_created: Date;
-  date_modified: Date;
-}
 
 export class CollectionModel {
   // Convert database row to Collection interface
-  private static async rowToCollection(row: CollectionRow): Promise<Collection> {
+  private static async rowToCollection(row: any): Promise<Collection> {
+    const client = supabase.getClient();
+    
     // Get recipe IDs for this collection
-    const recipesSql = 'SELECT recipe_id FROM recipe_collections WHERE collection_id = $1';
-    const recipeRows = await db.all<{ recipe_id: string }>(recipesSql, [row.collection_id]);
+    const recipeRows = await supabase.handleResponse(async () => {
+      return client
+        .from('recipe_collections')
+        .select('recipe_id')
+        .eq('collection_id', row.collection_id);
+    });
     
     // Calculate collection statistics
     const stats = await this.calculateStats(row.collection_id);
@@ -31,9 +25,9 @@ export class CollectionModel {
       color: row.color as CollectionColor,
       isPrivate: row.is_private,
       isDefault: row.is_default,
-      tags: row.tags ? JSON.parse(row.tags) : [],
-      dateCreated: row.date_created.toISOString(),
-      dateModified: row.date_modified.toISOString(),
+      tags: Array.isArray(row.tags) ? row.tags : [],
+      dateCreated: new Date(row.date_created).toISOString(),
+      dateModified: new Date(row.date_modified).toISOString(),
       recipeIds: recipeRows.map(r => r.recipe_id),
       stats,
     };
@@ -41,21 +35,24 @@ export class CollectionModel {
 
   // Calculate collection statistics
   private static async calculateStats(collectionId: string): Promise<CollectionStats> {
-    const recipesSql = `
-      SELECT r.overall_impression, r.brewing_method, r.origin, r.date_created
-      FROM recipes r
-      INNER JOIN recipe_collections rc ON r.recipe_id = rc.recipe_id
-      WHERE rc.collection_id = $1
-    `;
+    const client = supabase.getClient();
     
-    const recipes = await db.all<{
-      overall_impression: number;
-      brewing_method: string | null;
-      origin: string;
-      date_created: Date;
-    }>(recipesSql, [collectionId]);
+    const recipes = await supabase.handleResponse(async () => {
+      return client
+        .from('recipe_collections')
+        .select(`
+          recipes (
+            overall_impression,
+            brewing_method,
+            origin,
+            date_created
+          )
+        `)
+        .eq('collection_id', collectionId);
+    });
 
-    const totalRecipes = recipes.length;
+    const flatRecipes = recipes.map((rc: any) => rc.recipes).filter((r: any) => r);
+    const totalRecipes = flatRecipes.length;
     
     if (totalRecipes === 0) {
       return {
@@ -66,22 +63,32 @@ export class CollectionModel {
     }
 
     // Calculate averages and most common values
-    const averageOverallImpression = recipes.reduce((sum, recipe) => sum + recipe.overall_impression, 0) / totalRecipes;
+    const ratingsSum = flatRecipes.reduce((sum: number, recipe: any) => sum + (recipe.overall_impression || 0), 0);
+    const averageOverallImpression = ratingsSum / totalRecipes;
     
-    const brewingMethods = recipes.map(r => r.brewing_method).filter(Boolean);
-    const origins = recipes.map(r => r.origin).filter(Boolean);
+    const brewingMethods = flatRecipes.map((r: any) => r.brewing_method).filter(Boolean);
+    const origins = flatRecipes.map((r: any) => r.origin).filter(Boolean);
     
     const mostUsedBrewingMethod = this.getMostCommon(brewingMethods);
     const mostUsedOrigin = this.getMostCommon(origins);
     
-    const dates = recipes.map(r => r.date_created.toISOString()).sort();
+    const dates = flatRecipes.map((r: any) => new Date(r.date_created).toISOString()).sort();
     const dateRangeStart = dates[0];
     const dateRangeEnd = dates[dates.length - 1];
 
     // Get last activity date from recipe_collections table
-    const lastActivitySql = 'SELECT MAX(date_assigned) as last_activity FROM recipe_collections WHERE collection_id = $1';
-    const lastActivityRow = await db.get<{ last_activity: Date | null }>(lastActivitySql, [collectionId]);
-    const lastActivityDate = lastActivityRow?.last_activity?.toISOString() || new Date().toISOString();
+    const lastActivityResult = await supabase.handleResponse(async () => {
+      return client
+        .from('recipe_collections')
+        .select('date_assigned')
+        .eq('collection_id', collectionId)
+        .order('date_assigned', { ascending: false })
+        .limit(1);
+    });
+    
+    const lastActivityDate = lastActivityResult && lastActivityResult.length > 0 
+      ? new Date(lastActivityResult[0]!.date_assigned).toISOString()
+      : new Date().toISOString();
 
     return {
       totalRecipes,
@@ -120,60 +127,54 @@ export class CollectionModel {
 
   // Create a new collection
   public static async create(input: CollectionInput): Promise<Collection> {
+    const client = supabase.getClient();
     const id = uuidv4();
-    const now = new Date();
 
-    const sql = `
-      INSERT INTO collections (
-        collection_id, name, description, color, is_private, is_default, 
-        tags, date_created, date_modified
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-    `;
-    
-    const params = [
-      id,
-      input.name.trim(),
-      input.description?.trim() ?? null,
-      input.color,
-      input.isPrivate,
-      input.isDefault,
-      JSON.stringify(input.tags || []),
-      now,
-      now
-    ];
+    const collectionData = {
+      collection_id: id,
+      name: input.name.trim(),
+      description: input.description?.trim() ?? null,
+      color: input.color,
+      is_private: input.isPrivate,
+      is_default: input.isDefault,
+      tags: input.tags || [],
+    };
 
-    await db.run(sql, params);
-    
-    const created = await this.findById(id);
-    if (!created) {
-      throw new Error('Failed to create collection');
-    }
+    const result = await supabase.handleResponse(async () => {
+      return client.from('collections').insert(collectionData).select().single();
+    });
 
-    return created;
+    return this.rowToCollection(result);
   }
 
   // Find collection by ID
   public static async findById(id: string): Promise<Collection | null> {
-    const sql = 'SELECT * FROM collections WHERE collection_id = $1';
-    const row = await db.get<CollectionRow>(sql, [id]);
+    const client = supabase.getClient();
     
-    if (!row) {
+    const result = await supabase.handleOptionalResponse(async () => {
+      return client.from('collections').select('*').eq('collection_id', id).single();
+    });
+    
+    if (!result) {
       return null;
     }
 
-    return this.rowToCollection(row);
+    return this.rowToCollection(result);
   }
 
   // Find collection by name
   public static async findByName(name: string): Promise<Collection | null> {
-    const sql = 'SELECT * FROM collections WHERE name = $1';
-    const row = await db.get<CollectionRow>(sql, [name.trim()]);
+    const client = supabase.getClient();
     
-    if (!row) {
+    const result = await supabase.handleOptionalResponse(async () => {
+      return client.from('collections').select('*').eq('name', name.trim()).single();
+    });
+    
+    if (!result) {
       return null;
     }
 
-    return this.rowToCollection(row);
+    return this.rowToCollection(result);
   }
 
   // Get all collections with optional filtering
@@ -184,33 +185,30 @@ export class CollectionModel {
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
   }): Promise<Collection[]> {
-    let sql = 'SELECT * FROM collections WHERE 1=1';
-    const params: any[] = [];
+    const client = supabase.getClient();
+    
+    let query = client.from('collections').select('*');
 
     // Apply filters
     if (filters?.isPrivate !== undefined) {
-      sql += ' AND is_private = ?';
-      params.push(filters.isPrivate ? 1 : 0);
+      query = query.eq('is_private', filters.isPrivate);
     }
 
     if (filters?.color) {
-      sql += ' AND color = ?';
-      params.push(filters.color);
+      query = query.eq('color', filters.color);
     }
 
     if (filters?.searchQuery) {
-      sql += ' AND (name LIKE ? OR description LIKE ?)';
-      const searchPattern = `%${filters.searchQuery}%`;
-      params.push(searchPattern, searchPattern);
+      query = query.or(`name.ilike.%${filters.searchQuery}%,description.ilike.%${filters.searchQuery}%`);
     }
 
     // Apply sorting
     const validSortFields = ['name', 'date_created', 'date_modified'];
-    const sortBy = validSortFields.includes(filters?.sortBy || '') ? filters!.sortBy : 'name';
-    const sortOrder = filters?.sortOrder === 'desc' ? 'DESC' : 'ASC';
-    sql += ` ORDER BY ${sortBy} ${sortOrder}`;
+    const sortBy = validSortFields.includes(filters?.sortBy || '') ? filters!.sortBy! : 'name';
+    const ascending = filters?.sortOrder !== 'desc';
+    query = query.order(sortBy, { ascending });
 
-    const rows = await db.all<CollectionRow>(sql, params);
+    const rows = await supabase.handleResponse(async () => query);
     
     const collections = [];
     for (const row of rows) {
@@ -228,54 +226,47 @@ export class CollectionModel {
       return null;
     }
 
-    const now = new Date();
+    const client = supabase.getClient();
     
-    const sql = `
-      UPDATE collections SET 
-        name = $1, 
-        description = $2, 
-        color = $3, 
-        is_private = $4, 
-        is_default = $5, 
-        tags = $6, 
-        date_modified = $7
-      WHERE collection_id = $8
-    `;
+    const updateData: any = {};
     
-    const params = [
-      updates.name?.trim() ?? existing.name,
-      updates.description?.trim() ?? existing.description ?? null,
-      updates.color ?? existing.color,
-      updates.isPrivate !== undefined ? updates.isPrivate : existing.isPrivate,
-      updates.isDefault !== undefined ? updates.isDefault : existing.isDefault,
-      updates.tags !== undefined ? JSON.stringify(updates.tags) : JSON.stringify(existing.tags),
-      now,
-      id
-    ];
+    if (updates.name !== undefined) updateData.name = updates.name.trim();
+    if (updates.description !== undefined) updateData.description = updates.description?.trim() ?? null;
+    if (updates.color !== undefined) updateData.color = updates.color;
+    if (updates.isPrivate !== undefined) updateData.is_private = updates.isPrivate;
+    if (updates.isDefault !== undefined) updateData.is_default = updates.isDefault;
+    if (updates.tags !== undefined) updateData.tags = updates.tags;
 
-    await db.run(sql, params);
+    await client.from('collections').update(updateData).eq('collection_id', id);
+
     return this.findById(id);
   }
 
   // Delete collection
   public static async delete(id: string): Promise<boolean> {
-    // This will also delete associated recipe_collections due to CASCADE
-    const sql = 'DELETE FROM collections WHERE collection_id = $1';
-    const result = await db.run(sql, [id]);
-    return result.rowCount! > 0;
+    const client = supabase.getClient();
+    
+    await client.from('collections').delete().eq('collection_id', id);
+
+    return true; // Supabase delete returns success if no error
   }
 
   // Add recipe to collection
   public static async addRecipe(collectionId: string, recipeId: string): Promise<boolean> {
+    const client = supabase.getClient();
+    
     try {
-      const now = new Date();
-      const sql = 'INSERT INTO recipe_collections (collection_id, recipe_id, date_assigned) VALUES ($1, $2, $3)';
-      await db.run(sql, [collectionId, recipeId, now]);
+      await client
+        .from('recipe_collections')
+        .insert({ collection_id: collectionId, recipe_id: recipeId });
       return true;
     } catch (error) {
       // If it's a duplicate key error, that's fine - recipe is already in collection
-      if (error && typeof error === 'object' && 'code' in error && error.code === 'SQLITE_CONSTRAINT_PRIMARYKEY') {
-        return true;
+      if (error && typeof error === 'object' && 'message' in error) {
+        const message = error.message as string;
+        if (message.includes('duplicate') || message.includes('unique')) {
+          return true;
+        }
       }
       throw error;
     }
@@ -283,9 +274,15 @@ export class CollectionModel {
 
   // Remove recipe from collection
   public static async removeRecipe(collectionId: string, recipeId: string): Promise<boolean> {
-    const sql = 'DELETE FROM recipe_collections WHERE collection_id = $1 AND recipe_id = $2';
-    const result = await db.run(sql, [collectionId, recipeId]);
-    return result.rowCount! > 0;
+    const client = supabase.getClient();
+    
+    await client
+      .from('recipe_collections')
+      .delete()
+      .eq('collection_id', collectionId)
+      .eq('recipe_id', recipeId);
+
+    return true;
   }
 
   // Batch add recipes to collection
@@ -332,18 +329,24 @@ export class CollectionModel {
 
   // Get collections for a specific recipe
   public static async findByRecipeId(recipeId: string): Promise<Collection[]> {
-    const sql = `
-      SELECT c.* FROM collections c 
-      INNER JOIN recipe_collections rc ON c.collection_id = rc.collection_id 
-      WHERE rc.recipe_id = $1
-      ORDER BY c.name ASC
-    `;
-    const rows = await db.all<CollectionRow>(sql, [recipeId]);
+    const client = supabase.getClient();
+    
+    const collectionRows = await supabase.handleResponse(async () => {
+      return client
+        .from('recipe_collections')
+        .select(`
+          collections (*)
+        `)
+        .eq('recipe_id', recipeId)
+        .order('collections(name)', { ascending: true });
+    });
     
     const collections = [];
-    for (const row of rows) {
-      const collection = await this.rowToCollection(row);
-      collections.push(collection);
+    for (const rc of collectionRows) {
+      if (rc.collections) {
+        const collection = await this.rowToCollection(rc.collections);
+        collections.push(collection);
+      }
     }
 
     return collections;
@@ -351,30 +354,36 @@ export class CollectionModel {
 
   // Check if collection name exists
   public static async nameExists(name: string, excludeId?: string): Promise<boolean> {
-    let sql = 'SELECT COUNT(*) as count FROM collections WHERE name = $1';
-    const params: string[] = [name.trim()];
+    const client = supabase.getClient();
+    
+    let query = client.from('collections').select('collection_id', { count: 'exact', head: true }).eq('name', name.trim());
     
     if (excludeId) {
-      sql += ' AND collection_id != $2';
-      params.push(excludeId);
+      query = query.neq('collection_id', excludeId);
     }
     
-    const result = await db.get<{ count: number }>(sql, params);
-    return (result?.count ?? 0) > 0;
+    const { count } = await query;
+    return (count ?? 0) > 0;
   }
 
   // Get collections count
   public static async count(): Promise<number> {
-    const sql = 'SELECT COUNT(*) as count FROM collections';
-    const result = await db.get<{ count: number }>(sql);
-    return result?.count ?? 0;
+    const client = supabase.getClient();
+    
+    const { count } = await client.from('collections').select('*', { count: 'exact', head: true });
+    return count ?? 0;
   }
 
   // Get recipe count for a collection
   public static async getRecipeCount(collectionId: string): Promise<number> {
-    const sql = 'SELECT COUNT(*) as count FROM recipe_collections WHERE collection_id = $1';
-    const result = await db.get<{ count: number }>(sql, [collectionId]);
-    return result?.count ?? 0;
+    const client = supabase.getClient();
+    
+    const { count } = await client
+      .from('recipe_collections')
+      .select('*', { count: 'exact', head: true })
+      .eq('collection_id', collectionId);
+
+    return count ?? 0;
   }
 
   // Get collection summaries for efficient display
@@ -398,72 +407,72 @@ export class CollectionModel {
     averageRating: number;
     lastActivityDate: string;
   }>> {
-    let sql = `
-      SELECT 
-        c.*,
-        COUNT(rc.recipe_id) as recipe_count,
-        COALESCE(AVG(r.overall_impression), 0) as average_rating,
-        COALESCE(MAX(rc.date_assigned), c.date_created) as last_activity
-      FROM collections c
-      LEFT JOIN recipe_collections rc ON c.collection_id = rc.collection_id
-      LEFT JOIN recipes r ON rc.recipe_id = r.recipe_id
-      WHERE 1=1
-    `;
+    const client = supabase.getClient();
     
-    const params: any[] = [];
+    // Get collections with recipe counts and average ratings using a subquery approach
+    let collectionsQuery = client.from('collections').select(`
+      *,
+      recipe_collections (
+        recipe_id,
+        date_assigned,
+        recipes (
+          overall_impression
+        )
+      )
+    `);
 
     // Apply filters
     if (filters?.isPrivate !== undefined) {
-      sql += ` AND c.is_private = $${params.length + 1}`;
-      params.push(filters.isPrivate);
+      collectionsQuery = collectionsQuery.eq('is_private', filters.isPrivate);
     }
 
     if (filters?.color) {
-      sql += ` AND c.color = $${params.length + 1}`;
-      params.push(filters.color);
+      collectionsQuery = collectionsQuery.eq('color', filters.color);
     }
 
     if (filters?.searchQuery) {
-      sql += ` AND (c.name ILIKE $${params.length + 1} OR c.description ILIKE $${params.length + 2})`;
-      const searchPattern = `%${filters.searchQuery}%`;
-      params.push(searchPattern, searchPattern);
+      collectionsQuery = collectionsQuery.or(`name.ilike.%${filters.searchQuery}%,description.ilike.%${filters.searchQuery}%`);
     }
 
-    sql += ' GROUP BY c.collection_id';
+    // Apply sorting (we'll sort in JavaScript since complex aggregations aren't directly supported)
+    const validSortFields = ['name', 'date_created', 'date_modified'];
+    const sortBy = validSortFields.includes(filters?.sortBy || '') ? filters!.sortBy! : 'name';
+    const ascending = filters?.sortOrder !== 'desc';
+    collectionsQuery = collectionsQuery.order(sortBy, { ascending });
 
-    // Apply sorting
-    const validSortFields = ['name', 'date_created', 'date_modified', 'recipe_count'];
-    let sortBy = validSortFields.includes(filters?.sortBy || '') ? filters!.sortBy : 'name';
-    
-    if (sortBy === 'recipe_count') {
-      sortBy = 'recipe_count';
-    } else {
-      sortBy = `c.${sortBy}`;
-    }
-    
-    const sortOrder = filters?.sortOrder === 'desc' ? 'DESC' : 'ASC';
-    sql += ` ORDER BY ${sortBy} ${sortOrder}`;
+    const collections = await supabase.handleResponse(async () => collectionsQuery);
 
-    const rows = await db.all<CollectionRow & {
-      recipe_count: number;
-      average_rating: number;
-      last_activity: string;
-    }>(sql, params);
+    return collections.map(collection => {
+      const recipeConnections = collection.recipe_collections || [];
+      const recipeCount = recipeConnections.length;
+      
+      // Calculate average rating from connected recipes
+      const ratingsSum = recipeConnections.reduce((sum: number, rc: any) => {
+        return sum + (rc.recipes?.overall_impression || 0);
+      }, 0);
+      const averageRating = recipeCount > 0 ? ratingsSum / recipeCount : 0;
+      
+      // Find most recent activity
+      const activityDates = recipeConnections.map((rc: any) => new Date(rc.date_assigned).getTime());
+      const latestActivity = activityDates.length > 0 
+        ? Math.max(...activityDates)
+        : new Date(collection.date_created).getTime();
 
-    return rows.map(row => ({
-      collectionId: row.collection_id,
-      name: row.name,
-      description: row.description ?? undefined,
-      color: row.color as CollectionColor,
-      isPrivate: row.is_private,
-      isDefault: row.is_default,
-      tags: row.tags ? JSON.parse(row.tags) : [],
-      dateCreated: row.date_created.toISOString(),
-      dateModified: row.date_modified.toISOString(),
-      recipeCount: row.recipe_count,
-      averageRating: Math.round(row.average_rating * 100) / 100,
-      lastActivityDate: row.last_activity,
-    }));
+      return {
+        collectionId: collection.collection_id,
+        name: collection.name,
+        description: collection.description ?? undefined,
+        color: collection.color as CollectionColor,
+        isPrivate: collection.is_private,
+        isDefault: collection.is_default,
+        tags: Array.isArray(collection.tags) ? collection.tags : [],
+        dateCreated: new Date(collection.date_created).toISOString(),
+        dateModified: new Date(collection.date_modified).toISOString(),
+        recipeCount,
+        averageRating: Math.round(averageRating * 100) / 100,
+        lastActivityDate: new Date(latestActivity).toISOString(),
+      };
+    });
   }
 }
 

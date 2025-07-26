@@ -186,9 +186,15 @@ router.delete('/:id', validateUUIDParam, asyncHandler(async (req: Request, res: 
  * POST /api/collections/:id/recipes/:recipeId
  * Add a recipe to a collection
  */
-router.post('/:id/recipes/:recipeId', validateUUIDParam, asyncHandler(async (req: Request, res: Response) => {
+router.post('/:id/recipes/:recipeId', asyncHandler(async (req: Request, res: Response) => {
   try {
     const { id: collectionId, recipeId } = req.params as { id: string, recipeId: string };
+    
+    // Validate collection ID
+    const collectionIdValidation = UUIDSchema.safeParse(collectionId);
+    if (!collectionIdValidation.success) {
+      throw createApiError.badRequest('Collection ID must be a valid UUID');
+    }
     
     // Validate recipe ID
     const recipeIdValidation = UUIDSchema.safeParse(recipeId);
@@ -231,9 +237,15 @@ router.post('/:id/recipes/:recipeId', validateUUIDParam, asyncHandler(async (req
  * DELETE /api/collections/:id/recipes/:recipeId
  * Remove a recipe from a collection
  */
-router.delete('/:id/recipes/:recipeId', validateUUIDParam, asyncHandler(async (req: Request, res: Response) => {
+router.delete('/:id/recipes/:recipeId', asyncHandler(async (req: Request, res: Response) => {
   try {
     const { id: collectionId, recipeId } = req.params as { id: string, recipeId: string };
+    
+    // Validate collection ID
+    const collectionIdValidation = UUIDSchema.safeParse(collectionId);
+    if (!collectionIdValidation.success) {
+      throw createApiError.badRequest('Collection ID must be a valid UUID');
+    }
     
     // Validate recipe ID
     const recipeIdValidation = UUIDSchema.safeParse(recipeId);

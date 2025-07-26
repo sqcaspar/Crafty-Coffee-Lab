@@ -1,0 +1,573 @@
+import { v4 as uuidv4 } from 'uuid';
+import { db } from '../connection.js';
+import type { Recipe, RecipeInput, RoastingLevel, BrewingMethod, EvaluationSystem, TurbulenceInfo } from 'coffee-tracker-shared';
+
+interface RecipeRow {
+  recipe_id: string;
+  recipe_name: string;
+  date_created: Date;
+  date_modified: Date;
+  is_favorite: boolean; // PostgreSQL stores boolean as boolean
+  coffee_bean_brand: string | null;
+  origin: string;
+  processing_method: string;
+  altitude: number | null;
+  roasting_date: Date | null;
+  roasting_level: string | null;
+  water_temperature: number | null;
+  brewing_method: string | null;
+  grinder_model: string;
+  grinder_unit: string;
+  filtering_tools: string | null;
+  turbulence: string | null;
+  additional_notes: string | null;
+  coffee_beans: number;
+  water: number;
+  coffee_water_ratio: number;
+  brewed_coffee_weight: number | null;
+  tds: number | null;
+  extraction_yield: number | null;
+  
+  // Legacy sensation record fields
+  overall_impression: number | null;
+  acidity: number | null;
+  body: number | null;
+  sweetness: number | null;
+  flavor: number | null;
+  aftertaste: number | null;
+  balance: number | null;
+  tasting_notes: string | null;
+  
+  // Evaluation system indicator
+  evaluation_system: string | null;
+  
+  // Traditional SCA Cupping Form fields
+  sca_fragrance: number | null;
+  sca_aroma: number | null;
+  sca_flavor: number | null;
+  sca_aftertaste: number | null;
+  sca_acidity_quality: number | null;
+  sca_acidity_intensity: string | null;
+  sca_body_quality: number | null;
+  sca_body_level: string | null;
+  sca_balance: number | null;
+  sca_overall: number | null;
+  sca_uniformity: number | null;
+  sca_clean_cup: number | null;
+  sca_sweetness: number | null;
+  sca_taint_defects: number | null;
+  sca_fault_defects: number | null;
+  sca_final_score: number | null;
+  
+  // CVA Descriptive Assessment fields (SCA Standard 103-P/2024)
+  cva_desc_fragrance: number | null;
+  cva_desc_aroma: number | null;
+  cva_desc_flavor: number | null;
+  cva_desc_aftertaste: number | null;
+  cva_desc_acidity: number | null;
+  cva_desc_sweetness: number | null;
+  cva_desc_mouthfeel: number | null;
+  cva_desc_fragrance_aroma_descriptors: any; // JSONB array - combined limit ≤5
+  cva_desc_flavor_aftertaste_descriptors: any; // JSONB array - combined limit ≤5
+  cva_desc_main_tastes: any; // JSONB array - limit ≤2
+  cva_desc_mouthfeel_descriptors: any; // JSONB array - limit ≤2
+  cva_desc_acidity_descriptors: string | null; // Free text
+  cva_desc_sweetness_descriptors: string | null; // Free text
+  cva_desc_additional_notes: string | null; // Free text
+  cva_desc_roast_level: string | null; // Assessment metadata
+  cva_desc_assessment_date: Date | null; // Assessment metadata
+  cva_desc_assessor_id: string | null; // Assessment metadata
+  
+  // Quick Tasting Assessment fields (combination of CVA Descriptive and CVA Affective elements)
+  quick_tasting_flavor_intensity: number | null;
+  quick_tasting_aftertaste_intensity: number | null;
+  quick_tasting_acidity_intensity: number | null;
+  quick_tasting_sweetness_intensity: number | null;
+  quick_tasting_mouthfeel_intensity: number | null;
+  quick_tasting_flavor_aftertaste_descriptors: any; // JSON array
+  quick_tasting_overall_quality: number | null;
+  
+  // CVA Affective Assessment fields
+  cva_aff_fragrance: number | null;
+  cva_aff_aroma: number | null;
+  cva_aff_flavor: number | null;
+  cva_aff_aftertaste: number | null;
+  cva_aff_acidity: number | null;
+  cva_aff_sweetness: number | null;
+  cva_aff_mouthfeel: number | null;
+  cva_aff_overall: number | null;
+  cva_aff_non_uniform_cups: number | null;
+  cva_aff_defective_cups: number | null;
+  cva_aff_score: number | null;
+}
+
+export class RecipeModel {
+  // Convert database row to Recipe interface
+  private static rowToRecipe(row: RecipeRow): Recipe {
+    return {
+      recipeId: row.recipe_id,
+      recipeName: row.recipe_name,
+      dateCreated: row.date_created.toISOString(),
+      dateModified: row.date_modified.toISOString(),
+      isFavorite: row.is_favorite,
+      collections: [], // Will be populated by separate query
+      beanInfo: {
+        coffeeBeanBrand: row.coffee_bean_brand ?? undefined,
+        origin: row.origin,
+        processingMethod: row.processing_method,
+        altitude: row.altitude ?? undefined,
+        roastingDate: row.roasting_date?.toISOString() ?? undefined,
+        roastingLevel: row.roasting_level as RoastingLevel ?? undefined,
+      },
+      brewingParameters: {
+        waterTemperature: row.water_temperature ?? undefined,
+        brewingMethod: row.brewing_method as BrewingMethod ?? undefined,
+        grinderModel: row.grinder_model,
+        grinderUnit: row.grinder_unit,
+        filteringTools: row.filtering_tools ?? undefined,
+        additionalNotes: row.additional_notes ?? undefined,
+      },
+      turbulenceInfo: {
+        turbulence: row.turbulence ?? undefined,
+      },
+      measurements: {
+        coffeeBeans: row.coffee_beans,
+        water: row.water,
+        coffeeWaterRatio: row.coffee_water_ratio,
+        brewedCoffeeWeight: row.brewed_coffee_weight ?? undefined,
+        tds: row.tds ?? undefined,
+        extractionYield: row.extraction_yield ?? undefined,
+      },
+      sensationRecord: {
+        // Evaluation system indicator
+        evaluationSystem: row.evaluation_system as EvaluationSystem ?? undefined,
+        
+        // Legacy fields (maintain backwards compatibility)
+        overallImpression: row.overall_impression ?? undefined,
+        acidity: row.acidity ?? undefined,
+        body: row.body ?? undefined,
+        sweetness: row.sweetness ?? undefined,
+        flavor: row.flavor ?? undefined,
+        aftertaste: row.aftertaste ?? undefined,
+        balance: row.balance ?? undefined,
+        tastingNotes: row.tasting_notes ?? undefined,
+        
+        // Traditional SCA evaluation
+        traditionalSCA: (row.sca_fragrance || row.sca_aroma || row.sca_flavor) ? {
+          fragrance: row.sca_fragrance ?? undefined,
+          aroma: row.sca_aroma ?? undefined,
+          flavor: row.sca_flavor ?? undefined,
+          aftertaste: row.sca_aftertaste ?? undefined,
+          acidity: row.sca_acidity_quality ?? undefined,
+          body: row.sca_body_quality ?? undefined,
+          balance: row.sca_balance ?? undefined,
+          overall: row.sca_overall ?? undefined,
+          uniformity: row.sca_uniformity ?? undefined,
+          cleanCup: row.sca_clean_cup ?? undefined,
+          sweetness: row.sca_sweetness ?? undefined,
+          taintDefects: row.sca_taint_defects ?? undefined,
+          faultDefects: row.sca_fault_defects ?? undefined,
+          finalScore: row.sca_final_score ?? undefined,
+        } : undefined,
+        
+        // CVA Descriptive assessment (SCA Standard 103-P/2024)
+        cvaDescriptive: (row.cva_desc_fragrance !== null || row.cva_desc_aroma !== null) ? {
+          fragrance: row.cva_desc_fragrance ?? undefined,
+          aroma: row.cva_desc_aroma ?? undefined,
+          flavor: row.cva_desc_flavor ?? undefined,
+          aftertaste: row.cva_desc_aftertaste ?? undefined,
+          acidity: row.cva_desc_acidity ?? undefined,
+          sweetness: row.cva_desc_sweetness ?? undefined,
+          mouthfeel: row.cva_desc_mouthfeel ?? undefined,
+          fragranceAromaDescriptors: Array.isArray(row.cva_desc_fragrance_aroma_descriptors) ? row.cva_desc_fragrance_aroma_descriptors : undefined,
+          flavorAftertasteDescriptors: Array.isArray(row.cva_desc_flavor_aftertaste_descriptors) ? row.cva_desc_flavor_aftertaste_descriptors : undefined,
+          mainTastes: Array.isArray(row.cva_desc_main_tastes) ? row.cva_desc_main_tastes : undefined,
+          mouthfeelDescriptors: Array.isArray(row.cva_desc_mouthfeel_descriptors) ? row.cva_desc_mouthfeel_descriptors : undefined,
+          acidityDescriptors: row.cva_desc_acidity_descriptors ?? undefined,
+          sweetnessDescriptors: row.cva_desc_sweetness_descriptors ?? undefined,
+          additionalNotes: row.cva_desc_additional_notes ?? undefined,
+          roastLevel: row.cva_desc_roast_level ?? undefined,
+          assessmentDate: row.cva_desc_assessment_date?.toISOString() ?? undefined,
+          assessorId: row.cva_desc_assessor_id ?? undefined,
+        } : undefined,
+        
+        // Quick Tasting assessment (combination of CVA Descriptive and CVA Affective elements)
+        quickTasting: (row.quick_tasting_flavor_intensity !== null || row.quick_tasting_overall_quality !== null) ? {
+          flavorIntensity: row.quick_tasting_flavor_intensity ?? undefined,
+          aftertasteIntensity: row.quick_tasting_aftertaste_intensity ?? undefined,
+          acidityIntensity: row.quick_tasting_acidity_intensity ?? undefined,
+          sweetnessIntensity: row.quick_tasting_sweetness_intensity ?? undefined,
+          mouthfeelIntensity: row.quick_tasting_mouthfeel_intensity ?? undefined,
+          flavorAftertasteDescriptors: Array.isArray(row.quick_tasting_flavor_aftertaste_descriptors) ? row.quick_tasting_flavor_aftertaste_descriptors : 
+            (typeof row.quick_tasting_flavor_aftertaste_descriptors === 'string' ? JSON.parse(row.quick_tasting_flavor_aftertaste_descriptors) : undefined),
+          overallQuality: row.quick_tasting_overall_quality ?? undefined,
+        } : undefined,
+        
+        // CVA Affective assessment
+        cvaAffective: (row.cva_aff_fragrance !== null || row.cva_aff_aroma !== null) ? {
+          fragrance: row.cva_aff_fragrance ?? undefined,
+          aroma: row.cva_aff_aroma ?? undefined,
+          flavor: row.cva_aff_flavor ?? undefined,
+          aftertaste: row.cva_aff_aftertaste ?? undefined,
+          acidity: row.cva_aff_acidity ?? undefined,
+          sweetness: row.cva_aff_sweetness ?? undefined,
+          mouthfeel: row.cva_aff_mouthfeel ?? undefined,
+          overall: row.cva_aff_overall ?? undefined,
+          nonUniformCups: row.cva_aff_non_uniform_cups ?? undefined,
+          defectiveCups: row.cva_aff_defective_cups ?? undefined,
+          cvaScore: row.cva_aff_score ?? undefined,
+        } : undefined,
+      },
+    };
+  }
+
+  // Calculate coffee to water ratio
+  private static calculateRatio(coffeeBeans: number, water: number): number {
+    return Math.round((water / coffeeBeans) * 100) / 100;
+  }
+
+  // Generate recipe name if not provided
+  private static generateRecipeName(input: RecipeInput): string {
+    if (input.recipeName?.trim()) {
+      return input.recipeName.trim();
+    }
+    const date = new Date().toLocaleDateString();
+    return `${input.beanInfo.origin} - ${date}`;
+  }
+
+  // Helper method to extract evaluation data for database insertion
+  private static extractEvaluationData(input: RecipeInput) {
+    const sensation = input.sensationRecord;
+    
+    return {
+      // Evaluation system
+      evaluationSystem: sensation.evaluationSystem ?? null,
+      
+      // Legacy fields
+      overallImpression: sensation.overallImpression ?? null,
+      acidity: sensation.acidity ?? null,
+      body: sensation.body ?? null,
+      sweetness: sensation.sweetness ?? null,
+      flavor: sensation.flavor ?? null,
+      aftertaste: sensation.aftertaste ?? null,
+      balance: sensation.balance ?? null,
+      tastingNotes: sensation.tastingNotes ?? null,
+      
+      // Traditional SCA
+      scaFragrance: sensation.traditionalSCA?.fragrance ?? null,
+      scaAroma: sensation.traditionalSCA?.aroma ?? null,
+      scaFlavor: sensation.traditionalSCA?.flavor ?? null,
+      scaAftertaste: sensation.traditionalSCA?.aftertaste ?? null,
+      scaAcidityQuality: sensation.traditionalSCA?.acidity ?? null,
+      scaBodyQuality: sensation.traditionalSCA?.body ?? null,
+      scaBalance: sensation.traditionalSCA?.balance ?? null,
+      scaOverall: sensation.traditionalSCA?.overall ?? null,
+      scaUniformity: sensation.traditionalSCA?.uniformity ?? null,
+      scaCleanCup: sensation.traditionalSCA?.cleanCup ?? null,
+      scaSweetness: sensation.traditionalSCA?.sweetness ?? null,
+      scaTaintDefects: sensation.traditionalSCA?.taintDefects ?? null,
+      scaFaultDefects: sensation.traditionalSCA?.faultDefects ?? null,
+      scaFinalScore: sensation.traditionalSCA?.finalScore ?? null,
+      
+      // CVA Descriptive Assessment (SCA Standard 103-P/2024)
+      cvaDescFragrance: sensation.cvaDescriptive?.fragrance ?? null,
+      cvaDescAroma: sensation.cvaDescriptive?.aroma ?? null,
+      cvaDescFlavor: sensation.cvaDescriptive?.flavor ?? null,
+      cvaDescAftertaste: sensation.cvaDescriptive?.aftertaste ?? null,
+      cvaDescAcidity: sensation.cvaDescriptive?.acidity ?? null,
+      cvaDescSweetness: sensation.cvaDescriptive?.sweetness ?? null,
+      cvaDescMouthfeel: sensation.cvaDescriptive?.mouthfeel ?? null,
+      
+      // CATA Descriptor arrays (combined per SCA standard)
+      cvaDescFragranceAromaDescriptors: sensation.cvaDescriptive?.fragranceAromaDescriptors ? JSON.stringify(sensation.cvaDescriptive.fragranceAromaDescriptors) : null,
+      cvaDescFlavorAftertasteDescriptors: sensation.cvaDescriptive?.flavorAftertasteDescriptors ? JSON.stringify(sensation.cvaDescriptive.flavorAftertasteDescriptors) : null,
+      cvaDescMainTastes: sensation.cvaDescriptive?.mainTastes ? JSON.stringify(sensation.cvaDescriptive.mainTastes) : null,
+      cvaDescMouthfeelDescriptors: sensation.cvaDescriptive?.mouthfeelDescriptors ? JSON.stringify(sensation.cvaDescriptive.mouthfeelDescriptors) : null,
+      
+      // Free text descriptors
+      cvaDescAcidityDescriptors: sensation.cvaDescriptive?.acidityDescriptors ?? null,
+      cvaDescSweetnessDescriptors: sensation.cvaDescriptive?.sweetnessDescriptors ?? null,
+      cvaDescAdditionalNotes: sensation.cvaDescriptive?.additionalNotes ?? null,
+      
+      // Assessment metadata
+      cvaDescRoastLevel: sensation.cvaDescriptive?.roastLevel ?? null,
+      cvaDescAssessmentDate: sensation.cvaDescriptive?.assessmentDate ?? null,
+      cvaDescAssessorId: sensation.cvaDescriptive?.assessorId ?? null,
+      
+      // Quick Tasting
+      quickTastingFlavorIntensity: sensation.quickTasting?.flavorIntensity ?? null,
+      quickTastingAftertasteIntensity: sensation.quickTasting?.aftertasteIntensity ?? null,
+      quickTastingAcidityIntensity: sensation.quickTasting?.acidityIntensity ?? null,
+      quickTastingSweetnessIntensity: sensation.quickTasting?.sweetnessIntensity ?? null,
+      quickTastingMouthfeelIntensity: sensation.quickTasting?.mouthfeelIntensity ?? null,
+      quickTastingFlavorAftertasteDescriptors: sensation.quickTasting?.flavorAftertasteDescriptors ? JSON.stringify(sensation.quickTasting.flavorAftertasteDescriptors) : null,
+      quickTastingOverallQuality: sensation.quickTasting?.overallQuality ?? null,
+      
+      // CVA Affective
+      cvaAffFragrance: sensation.cvaAffective?.fragrance ?? null,
+      cvaAffAroma: sensation.cvaAffective?.aroma ?? null,
+      cvaAffFlavor: sensation.cvaAffective?.flavor ?? null,
+      cvaAffAftertaste: sensation.cvaAffective?.aftertaste ?? null,
+      cvaAffAcidity: sensation.cvaAffective?.acidity ?? null,
+      cvaAffSweetness: sensation.cvaAffective?.sweetness ?? null,
+      cvaAffMouthfeel: sensation.cvaAffective?.mouthfeel ?? null,
+      cvaAffOverall: sensation.cvaAffective?.overall ?? null,
+      cvaAffNonUniformCups: sensation.cvaAffective?.nonUniformCups ?? null,
+      cvaAffDefectiveCups: sensation.cvaAffective?.defectiveCups ?? null,
+      cvaAffScore: sensation.cvaAffective?.cvaScore ?? null,
+    };
+  }
+
+  // Create a new recipe
+  public static async create(input: RecipeInput): Promise<Recipe> {
+    const id = uuidv4();
+    const now = new Date();
+    const recipeName = this.generateRecipeName(input);
+    const coffeeWaterRatio = this.calculateRatio(input.measurements.coffeeBeans, input.measurements.water);
+    const evalData = this.extractEvaluationData(input);
+
+    const sql = `
+      INSERT INTO recipes (
+        recipe_id, recipe_name, date_created, date_modified, is_favorite,
+        coffee_bean_brand, origin, processing_method, altitude, roasting_date, roasting_level,
+        water_temperature, brewing_method, grinder_model, grinder_unit,
+        filtering_tools, turbulence, additional_notes,
+        coffee_beans, water, coffee_water_ratio, brewed_coffee_weight, tds, extraction_yield,
+        evaluation_system,
+        overall_impression, acidity, body, sweetness, flavor, aftertaste, balance, tasting_notes,
+        sca_fragrance, sca_aroma, sca_flavor, sca_aftertaste, sca_acidity_quality, sca_acidity_intensity,
+        sca_body_quality, sca_body_level, sca_balance, sca_overall, sca_uniformity, sca_clean_cup,
+        sca_sweetness, sca_taint_defects, sca_fault_defects, sca_final_score,
+        cva_desc_fragrance, cva_desc_aroma, cva_desc_flavor, cva_desc_aftertaste,
+        cva_desc_acidity, cva_desc_sweetness, cva_desc_mouthfeel,
+        cva_desc_fragrance_aroma_descriptors, cva_desc_flavor_aftertaste_descriptors, cva_desc_main_tastes, cva_desc_mouthfeel_descriptors,
+        cva_desc_acidity_descriptors, cva_desc_sweetness_descriptors, cva_desc_additional_notes,
+        cva_desc_roast_level, cva_desc_assessment_date, cva_desc_assessor_id,
+        quick_tasting_flavor_intensity, quick_tasting_aftertaste_intensity, quick_tasting_acidity_intensity,
+        quick_tasting_sweetness_intensity, quick_tasting_mouthfeel_intensity, quick_tasting_flavor_aftertaste_descriptors, quick_tasting_overall_quality,
+        cva_aff_fragrance, cva_aff_aroma, cva_aff_flavor, cva_aff_aftertaste, cva_aff_acidity,
+        cva_aff_sweetness, cva_aff_mouthfeel, cva_aff_overall, cva_aff_non_uniform_cups, cva_aff_defective_cups, cva_aff_score
+      ) VALUES (
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+      )
+    `;
+
+    const params = [
+      // Basic recipe info
+      id, recipeName, now, now, input.isFavorite,
+      input.beanInfo.coffeeBeanBrand ?? null,
+      input.beanInfo.origin, input.beanInfo.processingMethod, 
+      input.beanInfo.altitude ?? null, 
+      input.beanInfo.roastingDate ? new Date(input.beanInfo.roastingDate) : null, 
+      input.beanInfo.roastingLevel ?? null,
+      input.brewingParameters.waterTemperature ?? null, input.brewingParameters.brewingMethod ?? null,
+      input.brewingParameters.grinderModel, input.brewingParameters.grinderUnit,
+      input.brewingParameters.filteringTools ?? null, input.turbulenceInfo.turbulence ?? null,
+      input.brewingParameters.additionalNotes ?? null,
+      input.measurements.coffeeBeans, input.measurements.water, coffeeWaterRatio,
+      input.measurements.brewedCoffeeWeight ?? null, input.measurements.tds ?? null, input.measurements.extractionYield ?? null,
+      
+      // Evaluation data
+      evalData.evaluationSystem,
+      evalData.overallImpression, evalData.acidity, evalData.body, evalData.sweetness,
+      evalData.flavor, evalData.aftertaste, evalData.balance, evalData.tastingNotes,
+      
+      // Traditional SCA
+      evalData.scaFragrance, evalData.scaAroma, evalData.scaFlavor, evalData.scaAftertaste,
+      evalData.scaAcidityQuality, evalData.scaBodyQuality,
+      evalData.scaBalance, evalData.scaOverall, evalData.scaUniformity, evalData.scaCleanCup,
+      evalData.scaSweetness, evalData.scaTaintDefects, evalData.scaFaultDefects, evalData.scaFinalScore,
+      
+      // CVA Descriptive
+      evalData.cvaDescFragrance, evalData.cvaDescAroma, evalData.cvaDescFlavor, evalData.cvaDescAftertaste,
+      evalData.cvaDescAcidity, evalData.cvaDescSweetness, evalData.cvaDescMouthfeel,
+      evalData.cvaDescFragranceAromaDescriptors, evalData.cvaDescFlavorAftertasteDescriptors, evalData.cvaDescMainTastes, evalData.cvaDescMouthfeelDescriptors,
+      evalData.cvaDescAcidityDescriptors, evalData.cvaDescSweetnessDescriptors, evalData.cvaDescAdditionalNotes,
+      evalData.cvaDescRoastLevel, evalData.cvaDescAssessmentDate, evalData.cvaDescAssessorId,
+      
+      // Quick Tasting
+      evalData.quickTastingFlavorIntensity, evalData.quickTastingAftertasteIntensity, evalData.quickTastingAcidityIntensity,
+      evalData.quickTastingSweetnessIntensity, evalData.quickTastingMouthfeelIntensity, evalData.quickTastingFlavorAftertasteDescriptors, evalData.quickTastingOverallQuality,
+      
+      // CVA Affective
+      evalData.cvaAffFragrance, evalData.cvaAffAroma, evalData.cvaAffFlavor, evalData.cvaAffAftertaste, evalData.cvaAffAcidity,
+      evalData.cvaAffSweetness, evalData.cvaAffMouthfeel, evalData.cvaAffOverall, evalData.cvaAffNonUniformCups, evalData.cvaAffDefectiveCups, evalData.cvaAffScore
+    ];
+
+    await db.run(sql, params);
+    
+    const created = await this.findById(id);
+    if (!created) {
+      throw new Error('Failed to create recipe');
+    }
+
+    return created;
+  }
+
+  // Find recipe by ID
+  public static async findById(id: string): Promise<Recipe | null> {
+    const sql = 'SELECT * FROM recipes WHERE recipe_id = ?';
+    const row = await db.get<RecipeRow>(sql, [id]);
+    
+    if (!row) {
+      return null;
+    }
+
+    const recipe = this.rowToRecipe(row);
+    
+    // Get collections for this recipe
+    const collectionsSql = `
+      SELECT c.name FROM collections c 
+      INNER JOIN recipe_collections rc ON c.collection_id = rc.collection_id 
+      WHERE rc.recipe_id = ?
+    `;
+    const collections = await db.all<{ name: string }>(collectionsSql, [id]);
+    recipe.collections = collections.map(c => c.name);
+
+    return recipe;
+  }
+
+  // Get all recipes
+  public static async findAll(): Promise<Recipe[]> {
+    const sql = 'SELECT * FROM recipes ORDER BY date_modified DESC';
+    const rows = await db.all<RecipeRow>(sql);
+    
+    const recipes = [];
+    for (const row of rows) {
+      const recipe = this.rowToRecipe(row);
+      
+      // Get collections for each recipe
+      const collectionsSql = `
+        SELECT c.name FROM collections c 
+        INNER JOIN recipe_collections rc ON c.collection_id = rc.collection_id 
+        WHERE rc.recipe_id = ?
+      `;
+      const collections = await db.all<{ name: string }>(collectionsSql, [row.recipe_id]);
+      recipe.collections = collections.map(c => c.name);
+      
+      recipes.push(recipe);
+    }
+
+    return recipes;
+  }
+
+  // Update recipe
+  public static async update(id: string, input: RecipeInput): Promise<Recipe | null> {
+    const existing = await this.findById(id);
+    if (!existing) {
+      return null;
+    }
+
+    const now = new Date();
+    const recipeName = this.generateRecipeName(input);
+    const coffeeWaterRatio = this.calculateRatio(input.measurements.coffeeBeans, input.measurements.water);
+    const evalData = this.extractEvaluationData(input);
+
+    const sql = `
+      UPDATE recipes SET
+        recipe_name = ?, date_modified = ?, is_favorite = ?,
+        coffee_bean_brand = ?, origin = ?, processing_method = ?, altitude = ?, roasting_date = ?, roasting_level = ?,
+        water_temperature = ?, brewing_method = ?, grinder_model = ?, grinder_unit = ?,
+        filtering_tools = ?, turbulence = ?, additional_notes = ?,
+        coffee_beans = ?, water = ?, coffee_water_ratio = ?, brewed_coffee_weight = ?, tds = ?, extraction_yield = ?,
+        evaluation_system = ?,
+        overall_impression = ?, acidity = ?, body = ?, sweetness = ?, flavor = ?, 
+        aftertaste = ?, balance = ?, tasting_notes = ?,
+        sca_fragrance = ?, sca_aroma = ?, sca_flavor = ?, sca_aftertaste = ?, sca_acidity_quality = ?, sca_acidity_intensity = ?,
+        sca_body_quality = ?, sca_body_level = ?, sca_balance = ?, sca_overall = ?, sca_uniformity = ?, sca_clean_cup = ?,
+        sca_sweetness = ?, sca_taint_defects = ?, sca_fault_defects = ?, sca_final_score = ?,
+        cva_desc_fragrance = ?, cva_desc_aroma = ?, cva_desc_flavor = ?, cva_desc_aftertaste = ?,
+        cva_desc_acidity = ?, cva_desc_sweetness = ?, cva_desc_mouthfeel = ?,
+        cva_desc_fragrance_aroma_descriptors = ?, cva_desc_flavor_aftertaste_descriptors = ?, cva_desc_main_tastes = ?, cva_desc_mouthfeel_descriptors = ?,
+        cva_desc_acidity_descriptors = ?, cva_desc_sweetness_descriptors = ?, cva_desc_additional_notes = ?,
+        cva_desc_roast_level = ?, cva_desc_assessment_date = ?, cva_desc_assessor_id = ?,
+        quick_tasting_flavor_intensity = ?, quick_tasting_aftertaste_intensity = ?, quick_tasting_acidity_intensity = ?,
+        quick_tasting_sweetness_intensity = ?, quick_tasting_mouthfeel_intensity = ?, quick_tasting_flavor_aftertaste_descriptors = ?, quick_tasting_overall_quality = ?,
+        cva_aff_fragrance = ?, cva_aff_aroma = ?, cva_aff_flavor = ?, cva_aff_aftertaste = ?, cva_aff_acidity = ?,
+        cva_aff_sweetness = ?, cva_aff_mouthfeel = ?, cva_aff_overall = ?, cva_aff_non_uniform_cups = ?, cva_aff_defective_cups = ?, cva_aff_score = ?
+      WHERE recipe_id = ?
+    `;
+
+    const params = [
+      // Basic recipe info
+      recipeName, now, input.isFavorite,
+      input.beanInfo.coffeeBeanBrand ?? null,
+      input.beanInfo.origin, input.beanInfo.processingMethod,
+      input.beanInfo.altitude ?? null, 
+      input.beanInfo.roastingDate ? new Date(input.beanInfo.roastingDate) : null, 
+      input.beanInfo.roastingLevel ?? null,
+      input.brewingParameters.waterTemperature ?? null, input.brewingParameters.brewingMethod ?? null,
+      input.brewingParameters.grinderModel, input.brewingParameters.grinderUnit,
+      input.brewingParameters.filteringTools ?? null, input.turbulenceInfo.turbulence ?? null,
+      input.brewingParameters.additionalNotes ?? null,
+      input.measurements.coffeeBeans, input.measurements.water, coffeeWaterRatio,
+      input.measurements.brewedCoffeeWeight ?? null, input.measurements.tds ?? null, input.measurements.extractionYield ?? null,
+      
+      // Evaluation data
+      evalData.evaluationSystem,
+      evalData.overallImpression, evalData.acidity, evalData.body, evalData.sweetness,
+      evalData.flavor, evalData.aftertaste, evalData.balance, evalData.tastingNotes,
+      
+      // Traditional SCA
+      evalData.scaFragrance, evalData.scaAroma, evalData.scaFlavor, evalData.scaAftertaste,
+      evalData.scaAcidityQuality, evalData.scaBodyQuality,
+      evalData.scaBalance, evalData.scaOverall, evalData.scaUniformity, evalData.scaCleanCup,
+      evalData.scaSweetness, evalData.scaTaintDefects, evalData.scaFaultDefects, evalData.scaFinalScore,
+      
+      // CVA Descriptive
+      evalData.cvaDescFragrance, evalData.cvaDescAroma, evalData.cvaDescFlavor, evalData.cvaDescAftertaste,
+      evalData.cvaDescAcidity, evalData.cvaDescSweetness, evalData.cvaDescMouthfeel,
+      evalData.cvaDescFragranceAromaDescriptors, evalData.cvaDescFlavorAftertasteDescriptors, evalData.cvaDescMainTastes, evalData.cvaDescMouthfeelDescriptors,
+      evalData.cvaDescAcidityDescriptors, evalData.cvaDescSweetnessDescriptors, evalData.cvaDescAdditionalNotes,
+      evalData.cvaDescRoastLevel, evalData.cvaDescAssessmentDate, evalData.cvaDescAssessorId,
+      
+      // Quick Tasting
+      evalData.quickTastingFlavorIntensity, evalData.quickTastingAftertasteIntensity, evalData.quickTastingAcidityIntensity,
+      evalData.quickTastingSweetnessIntensity, evalData.quickTastingMouthfeelIntensity, evalData.quickTastingFlavorAftertasteDescriptors, evalData.quickTastingOverallQuality,
+      
+      // CVA Affective
+      evalData.cvaAffFragrance, evalData.cvaAffAroma, evalData.cvaAffFlavor, evalData.cvaAffAftertaste, evalData.cvaAffAcidity,
+      evalData.cvaAffSweetness, evalData.cvaAffMouthfeel, evalData.cvaAffOverall, evalData.cvaAffNonUniformCups, evalData.cvaAffDefectiveCups, evalData.cvaAffScore,
+      
+      // WHERE clause
+      id
+    ];
+
+    await db.run(sql, params);
+    return this.findById(id);
+  }
+
+  // Delete recipe
+  public static async delete(id: string): Promise<boolean> {
+    const sql = 'DELETE FROM recipes WHERE recipe_id = ?';
+    const result = await db.run(sql, [id]);
+    return result.rowCount! > 0;
+  }
+
+  // Toggle favorite status
+  public static async toggleFavorite(id: string): Promise<Recipe | null> {
+    const existing = await this.findById(id);
+    if (!existing) {
+      return null;
+    }
+
+    const sql = 'UPDATE recipes SET is_favorite = ?, date_modified = ? WHERE recipe_id = ?';
+    const newFavoriteStatus = !existing.isFavorite;
+    const now = new Date();
+    
+    await db.run(sql, [newFavoriteStatus, now, id]);
+    return this.findById(id);
+  }
+
+  // Get recipes count
+  public static async count(): Promise<number> {
+    const sql = 'SELECT COUNT(*) as count FROM recipes';
+    const result = await db.get<{ count: number }>(sql);
+    return result?.count ?? 0;
+  }
+}
+
+export default RecipeModel;

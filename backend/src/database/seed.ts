@@ -11,6 +11,7 @@ const sampleRecipes: RecipeInput[] = [
     isFavorite: true,
     collections: [],
     beanInfo: {
+      coffeeBeanBrand: 'Blue Bottle Coffee',
       origin: CoffeeOrigin.ETHIOPIA,
       processingMethod: ProcessingMethod.WASHED,
       altitude: 1800,
@@ -23,12 +24,14 @@ const sampleRecipes: RecipeInput[] = [
       grinderModel: GrinderModel.BARATZA_ENCORE,
       grinderUnit: '12',
       filteringTools: FilteringTool.PAPER,
+      additionalNotes: 'Bloomed for 45 seconds, total brew time 3:30'
+    },
+    turbulenceInfo: {
       turbulence: [
         { actionTime: '0:00', actionDetails: 'Gentle Circle Water Pour', volume: '50ml' },
         { actionTime: '0:45', actionDetails: 'Continue Pouring', volume: '150ml' },
         { actionTime: '2:00', actionDetails: 'Final Pour', volume: '150ml' }
-      ] as TurbulenceStep[],
-      additionalNotes: 'Bloomed for 45 seconds, total brew time 3:30'
+      ] as TurbulenceStep[]
     },
     measurements: {
       coffeeBeans: 22,
@@ -53,6 +56,7 @@ const sampleRecipes: RecipeInput[] = [
     isFavorite: false,
     collections: [],
     beanInfo: {
+      coffeeBeanBrand: 'Counter Culture Coffee',
       origin: CoffeeOrigin.COLOMBIA,
       processingMethod: ProcessingMethod.NATURAL,
       altitude: 1650,
@@ -65,10 +69,12 @@ const sampleRecipes: RecipeInput[] = [
       grinderModel: GrinderModel.COMANDANTE_C40,
       grinderUnit: '33',
       filteringTools: FilteringTool.METAL,
+      additionalNotes: '4 minute steep time, plunged slowly'
+    },
+    turbulenceInfo: {
       turbulence: [
         { actionTime: '1:00', actionDetails: 'Single Stir', volume: '500ml' }
-      ] as TurbulenceStep[],
-      additionalNotes: '4 minute steep time, plunged slowly'
+      ] as TurbulenceStep[]
     },
     measurements: {
       coffeeBeans: 30,
@@ -93,6 +99,7 @@ const sampleRecipes: RecipeInput[] = [
     isFavorite: true,
     collections: [],
     beanInfo: {
+      coffeeBeanBrand: 'Intelligentsia Coffee',
       origin: CoffeeOrigin.GUATEMALA,
       processingMethod: ProcessingMethod.WASHED,
       altitude: 1500,
@@ -105,13 +112,15 @@ const sampleRecipes: RecipeInput[] = [
       grinderModel: GrinderModel.TIMEMORE_C2,
       grinderUnit: '20',
       filteringTools: FilteringTool.METAL,
+      additionalNotes: '1:30 steep, pressed over 30 seconds'
+    },
+    turbulenceInfo: {
       turbulence: [
         { actionTime: '0:00', actionDetails: 'Invert and Add Coffee', volume: '270ml' },
         { actionTime: '0:30', actionDetails: 'First Stir', volume: '0ml' },
         { actionTime: '1:00', actionDetails: 'Second Stir', volume: '0ml' },
         { actionTime: '1:30', actionDetails: 'Final Stir and Press', volume: '0ml' }
-      ] as TurbulenceStep[],
-      additionalNotes: '1:30 steep, pressed over 30 seconds'
+      ] as TurbulenceStep[]
     },
     measurements: {
       coffeeBeans: 18,
@@ -136,6 +145,7 @@ const sampleRecipes: RecipeInput[] = [
     isFavorite: false,
     collections: [],
     beanInfo: {
+      coffeeBeanBrand: 'Stumptown Coffee Roasters',
       origin: CoffeeOrigin.BRAZIL,
       processingMethod: ProcessingMethod.HONEY,
       altitude: 1200,
@@ -148,10 +158,12 @@ const sampleRecipes: RecipeInput[] = [
       grinderModel: GrinderModel.BARATZA_ENCORE,
       grinderUnit: '38',
       filteringTools: FilteringTool.METAL,
+      additionalNotes: '12 hour steep at room temperature, then refrigerated'
+    },
+    turbulenceInfo: {
       turbulence: [
         { actionTime: '0:00', actionDetails: 'Initial Stir', volume: '800ml' }
-      ] as TurbulenceStep[],
-      additionalNotes: '12 hour steep at room temperature, then refrigerated'
+      ] as TurbulenceStep[]
     },
     measurements: {
       coffeeBeans: 100,
@@ -176,6 +188,7 @@ const sampleRecipes: RecipeInput[] = [
     isFavorite: true,
     collections: [],
     beanInfo: {
+      coffeeBeanBrand: 'Ritual Coffee Roasters',
       origin: CoffeeOrigin.KENYA,
       processingMethod: ProcessingMethod.WASHED,
       altitude: 1700,
@@ -188,13 +201,15 @@ const sampleRecipes: RecipeInput[] = [
       grinderModel: GrinderModel.BARATZA_VIRTUOSO_PLUS,
       grinderUnit: '28',
       filteringTools: FilteringTool.PAPER,
+      additionalNotes: 'Pre-infusion 30s, total time 5:30'
+    },
+    turbulenceInfo: {
       turbulence: [
         { actionTime: '0:00', actionDetails: 'Pre-infusion', volume: '84ml' },
         { actionTime: '0:30', actionDetails: 'Slow Spiral Pour', volume: '200ml' },
         { actionTime: '2:30', actionDetails: 'Continue Spiral Pour', volume: '200ml' },
         { actionTime: '4:00', actionDetails: 'Final Pour', volume: '216ml' }
-      ] as TurbulenceStep[],
-      additionalNotes: 'Pre-infusion 30s, total time 5:30'
+      ] as TurbulenceStep[]
     },
     measurements: {
       coffeeBeans: 42,

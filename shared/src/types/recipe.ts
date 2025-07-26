@@ -28,6 +28,7 @@ export enum SortOption {
  * Bean Information interface
  */
 export interface BeanInfo {
+  coffeeBeanBrand?: string; // Optional - coffee bean brand/producer name
   origin: string; // Required - coffee origin country (will be CoffeeOrigin enum values)
   processingMethod: string; // Required - washed, natural, etc.
   altitude?: number; // Optional - meters above sea level
@@ -45,6 +46,13 @@ export interface TurbulenceStep {
 }
 
 /**
+ * Turbulence Information interface
+ */
+export interface TurbulenceInfo {
+  turbulence?: string | TurbulenceStep[]; // Optional - legacy string or structured steps
+}
+
+/**
  * Brewing Parameters interface
  */
 export interface BrewingParameters {
@@ -53,7 +61,6 @@ export interface BrewingParameters {
   grinderModel: string; // Required - grinder brand/model
   grinderUnit: string; // Required - grind size description
   filteringTools?: string; // Optional - filters, papers used
-  turbulence?: string | TurbulenceStep[]; // Optional - legacy string or structured steps
   additionalNotes?: string; // Optional - any extra brewing notes
 }
 
@@ -169,9 +176,29 @@ export interface CVAAffectiveAssessment {
 }
 
 /**
+ * Quick Tasting Assessment
+ * Simplified form combining key elements from CVA Descriptive and CVA Affective assessments
+ * Designed for rapid evaluation while maintaining professional standards
+ */
+export interface QuickTastingAssessment {
+  // CVA Descriptive intensity fields (0-15 scale: 0=None, 15=Very High)
+  flavorIntensity?: number;        // Combined taste + retronasal smell in mouth
+  aftertasteIntensity?: number;    // Sensations remaining after swallowing
+  acidityIntensity?: number;       // Perceived sourness character & intensity
+  sweetnessIntensity?: number;     // Perceived sweetness impression
+  mouthfeelIntensity?: number;     // Viscosity, texture, astringency
+  
+  // CVA Descriptive CATA descriptors
+  flavorAftertasteDescriptors?: string[];  // From olfactory list (≤5 selections)
+  
+  // CVA Affective quality assessment (1-9 scale: 5=neutral liking)
+  overallQuality?: number;         // Overall impression of quality
+}
+
+/**
  * Evaluation System Types
  */
-export type EvaluationSystem = 'traditional-sca' | 'cva-descriptive' | 'cva-affective' | 'legacy';
+export type EvaluationSystem = 'traditional-sca' | 'cva-descriptive' | 'cva-affective' | 'quick-tasting' | 'legacy';
 
 /**
  * Sensation Record interface for taste evaluation
@@ -195,6 +222,7 @@ export interface SensationRecord {
   traditionalSCA?: TraditionalSCAEvaluation;
   cvaDescriptive?: CVADescriptiveAssessment;
   cvaAffective?: CVAAffectiveAssessment;
+  quickTasting?: QuickTastingAssessment;
 }
 
 /**
@@ -211,6 +239,7 @@ export interface Recipe {
   // Nested data structures
   beanInfo: BeanInfo;
   brewingParameters: BrewingParameters;
+  turbulenceInfo: TurbulenceInfo;
   measurements: Measurements;
   sensationRecord: SensationRecord;
 }

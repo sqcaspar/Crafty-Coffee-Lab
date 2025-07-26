@@ -21,7 +21,12 @@ const corsOptions: CorsOptions = {
     // In production, add your production domains
     if (process.env.NODE_ENV === 'production') {
       // Add production origins here when deploying
-      // allowedOrigins.push('https://your-domain.com');
+      if (process.env.FRONTEND_URL) {
+        allowedOrigins.push(process.env.FRONTEND_URL);
+      }
+      // Common production patterns
+      allowedOrigins.push('https://*.vercel.app');
+      allowedOrigins.push('https://*.netlify.app');
     }
 
     if (allowedOrigins.includes(origin)) {

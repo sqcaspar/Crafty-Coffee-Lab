@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import { initializeDatabase, seedDatabase } from './database/index.js';
 import { corsMiddleware, requestLogger, errorHandler, notFoundHandler } from './middleware/index.js';
@@ -10,8 +11,8 @@ const initDB = async () => {
   try {
     await initializeDatabase();
     
-    // Seed database with sample data in development
-    if (process.env.NODE_ENV === 'development') {
+    // Seed database with sample data in development or if explicitly requested
+    if (process.env.NODE_ENV === 'development' || process.env.SEED_DATABASE === 'true') {
       await seedDatabase();
     }
   } catch (error) {
@@ -38,6 +39,16 @@ app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   next();
+});
+
+// Root endpoint for basic health check
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    message: 'Coffee Brewing Tracker API',
+    version: '1.0.0',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Health check endpoint

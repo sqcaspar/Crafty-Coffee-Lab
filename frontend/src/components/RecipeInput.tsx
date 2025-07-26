@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { BeanInfo, BrewingParameters, MeasurementsInput, SensationRecord, RoastingLevel, BrewingMethod, TurbulenceStep } from '../../../shared/src/types/recipe';
+import { BeanInfo, BrewingParameters, TurbulenceInfo, MeasurementsInput, SensationRecord, RoastingLevel, BrewingMethod, TurbulenceStep } from '../../../shared/src/types/recipe';
 import { COFFEE_ORIGIN_GROUPS, CoffeeOrigin } from '../../../shared/src/constants/coffeeOrigins';
 import { PROCESSING_METHOD_OPTIONS, ProcessingMethod } from '../../../shared/src/constants/processingMethods';
 import { WATER_TEMPERATURE_OPTIONS, parseTemperature } from '../../../shared/src/constants/waterTemperature';
@@ -40,6 +40,7 @@ interface FormData {
   collections: string[];
   beanInfo: BeanInfo;
   brewingParameters: BrewingParameters;
+  turbulenceInfo: TurbulenceInfo;
   measurements: MeasurementsInput;
   sensationRecord: SensationRecord;
 }
@@ -79,6 +80,7 @@ const initialFormData: FormData = {
   isFavorite: false,
   collections: [],
   beanInfo: {
+    coffeeBeanBrand: undefined,
     origin: '',
     processingMethod: '',
     altitude: undefined,
@@ -91,8 +93,10 @@ const initialFormData: FormData = {
     grinderModel: '',
     grinderUnit: '',
     filteringTools: undefined,
-    turbulence: undefined,
     additionalNotes: undefined
+  },
+  turbulenceInfo: {
+    turbulence: undefined
   },
   measurements: {
     coffeeBeans: '' as any,
@@ -339,9 +343,9 @@ export default function RecipeInput({
 
   // Sync turbulence steps when formData changes (for edit mode)
   useEffect(() => {
-    const steps = convertTurbulenceToSteps(formData.brewingParameters.turbulence);
+    const steps = convertTurbulenceToSteps(formData.turbulenceInfo.turbulence);
     setTurbulenceSteps(steps);
-  }, [formData.brewingParameters.turbulence]);
+  }, [formData.turbulenceInfo.turbulence]);
 
   // Auto-calculate extraction yield using SCA formula
   useEffect(() => {
@@ -589,6 +593,15 @@ export default function RecipeInput({
       )
     },
     { 
+      id: 'turbulence', 
+      title: 'Turbulence', 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      )
+    },
+    { 
       id: 'measurements', 
       title: 'Measurements', 
       icon: (
@@ -735,6 +748,15 @@ export default function RecipeInput({
                 <div className="p-6 bg-mono-white border-t border-mono-200">
                   {panel.id === 'basic' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <TextInput
+                        id="coffeeBeanBrand"
+                        label="Coffee Bean Brand"
+                        value={formData.beanInfo.coffeeBeanBrand || ''}
+                        onChange={(value) => updateFormData('beanInfo.coffeeBeanBrand', value === '' ? undefined : value)}
+                        onBlur={(value) => handleFieldBlur('beanInfo.coffeeBeanBrand', value)}
+                        placeholder="Enter coffee bean brand or producer..."
+                        error={getFieldValidation('beanInfo.coffeeBeanBrand').error}
+                      />
                       <GroupedSelect
                         id="origin"
                         label="Origin"
@@ -840,15 +862,6 @@ export default function RecipeInput({
                           options={FILTERING_TOOL_OPTIONS}
                           placeholder="Select filter type..."
                         />
-                        <TurbulenceSteps
-                          value={turbulenceSteps}
-                          onChange={(steps) => {
-                            setTurbulenceSteps(steps);
-                            const filteredSteps = convertStepsToTurbulence(steps);
-                            updateFormData('brewingParameters.turbulence', filteredSteps.length > 0 ? filteredSteps : undefined);
-                          }}
-                          error={getFieldValidation('brewingParameters.turbulence').error}
-                        />
                       </div>
                       <div className="mt-6">
                         <TextArea
@@ -861,6 +874,20 @@ export default function RecipeInput({
                         />
                       </div>
                     </>
+                  )}
+
+                  {panel.id === 'turbulence' && (
+                    <div>
+                      <TurbulenceSteps
+                        value={turbulenceSteps}
+                        onChange={(steps) => {
+                          setTurbulenceSteps(steps);
+                          const filteredSteps = convertStepsToTurbulence(steps);
+                          updateFormData('turbulenceInfo.turbulence', filteredSteps.length > 0 ? filteredSteps : undefined);
+                        }}
+                        error={getFieldValidation('turbulenceInfo.turbulence').error}
+                      />
+                    </div>
                   )}
 
                   {panel.id === 'measurements' && (

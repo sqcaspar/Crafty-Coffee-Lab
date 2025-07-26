@@ -2,16 +2,17 @@ import { db } from './connection.js';
 
 export const createTables = async (): Promise<void> => {
   try {
-    // Create recipes table with all fields from specification (PostgreSQL)
+    // Create recipes table with all fields from specification (SQLite)
     await db.run(`
       CREATE TABLE IF NOT EXISTS recipes (
-        recipe_id UUID PRIMARY KEY,
+        recipe_id TEXT PRIMARY KEY,
         recipe_name VARCHAR(200),
         date_created TIMESTAMP NOT NULL,
         date_modified TIMESTAMP NOT NULL,
         is_favorite BOOLEAN DEFAULT FALSE,
         
         -- Bean Information
+        coffee_bean_brand VARCHAR(100),
         origin VARCHAR(100) NOT NULL,
         processing_method VARCHAR(50) NOT NULL,
         altitude INTEGER,
@@ -76,10 +77,10 @@ export const createTables = async (): Promise<void> => {
         cva_desc_mouthfeel INTEGER CHECK (cva_desc_mouthfeel >= 0 AND cva_desc_mouthfeel <= 15),
         
         -- CATA Descriptor arrays (combined per SCA standard)
-        cva_desc_fragrance_aroma_descriptors JSONB DEFAULT '[]',  -- Combined fragrance + aroma (≤5 total)
-        cva_desc_flavor_aftertaste_descriptors JSONB DEFAULT '[]',  -- Combined flavor + aftertaste (≤5 total)
-        cva_desc_main_tastes JSONB DEFAULT '[]',  -- Main tastes (≤2 selections)
-        cva_desc_mouthfeel_descriptors JSONB DEFAULT '[]',  -- Mouthfeel descriptors (≤2 selections)
+        cva_desc_fragrance_aroma_descriptors TEXT DEFAULT '[]',  -- Combined fragrance + aroma (≤5 total)
+        cva_desc_flavor_aftertaste_descriptors TEXT DEFAULT '[]',  -- Combined flavor + aftertaste (≤5 total)
+        cva_desc_main_tastes TEXT DEFAULT '[]',  -- Main tastes (≤2 selections)
+        cva_desc_mouthfeel_descriptors TEXT DEFAULT '[]',  -- Mouthfeel descriptors (≤2 selections)
         
         -- Free text descriptors
         cva_desc_acidity_descriptors TEXT,  -- Free text for acidity (e.g., "tartaric, bright")
@@ -90,6 +91,15 @@ export const createTables = async (): Promise<void> => {
         cva_desc_roast_level VARCHAR(100),  -- Visual roast assessment (e.g., "Light (Agtron 58)")
         cva_desc_assessment_date TIMESTAMP,  -- Assessment completion date
         cva_desc_assessor_id VARCHAR(100),  -- Cupper identification
+        
+        -- Quick Tasting Assessment (combination of CVA Descriptive and CVA Affective elements)
+        quick_tasting_flavor_intensity INTEGER CHECK (quick_tasting_flavor_intensity >= 0 AND quick_tasting_flavor_intensity <= 15),
+        quick_tasting_aftertaste_intensity INTEGER CHECK (quick_tasting_aftertaste_intensity >= 0 AND quick_tasting_aftertaste_intensity <= 15),
+        quick_tasting_acidity_intensity INTEGER CHECK (quick_tasting_acidity_intensity >= 0 AND quick_tasting_acidity_intensity <= 15),
+        quick_tasting_sweetness_intensity INTEGER CHECK (quick_tasting_sweetness_intensity >= 0 AND quick_tasting_sweetness_intensity <= 15),
+        quick_tasting_mouthfeel_intensity INTEGER CHECK (quick_tasting_mouthfeel_intensity >= 0 AND quick_tasting_mouthfeel_intensity <= 15),
+        quick_tasting_flavor_aftertaste_descriptors TEXT DEFAULT '[]',  -- CATA descriptors (≤5 selections)
+        quick_tasting_overall_quality INTEGER CHECK (quick_tasting_overall_quality >= 1 AND quick_tasting_overall_quality <= 9),
         
         -- CVA Affective Assessment (1-9 quality scale)
         cva_aff_fragrance INTEGER CHECK (cva_aff_fragrance >= 1 AND cva_aff_fragrance <= 9),
@@ -106,26 +116,26 @@ export const createTables = async (): Promise<void> => {
       )
     `);
 
-    // Create collections table with comprehensive schema (PostgreSQL)
+    // Create collections table with comprehensive schema (SQLite)
     await db.run(`
       CREATE TABLE IF NOT EXISTS collections (
-        collection_id UUID PRIMARY KEY,
+        collection_id TEXT PRIMARY KEY,
         name VARCHAR(100) NOT NULL UNIQUE,
         description TEXT,
         color VARCHAR(20) NOT NULL DEFAULT 'blue',
         is_private BOOLEAN DEFAULT FALSE,
         is_default BOOLEAN DEFAULT FALSE,
-        tags JSONB DEFAULT '[]',
+        tags TEXT DEFAULT '[]',
         date_created TIMESTAMP NOT NULL,
         date_modified TIMESTAMP NOT NULL
       )
     `);
 
-    // Create recipe_collections junction table for many-to-many relationship (PostgreSQL)
+    // Create recipe_collections junction table for many-to-many relationship (SQLite)
     await db.run(`
       CREATE TABLE IF NOT EXISTS recipe_collections (
-        recipe_id UUID NOT NULL,
-        collection_id UUID NOT NULL,
+        recipe_id TEXT NOT NULL,
+        collection_id TEXT NOT NULL,
         date_assigned TIMESTAMP NOT NULL,
         PRIMARY KEY (recipe_id, collection_id),
         FOREIGN KEY (recipe_id) REFERENCES recipes (recipe_id) ON DELETE CASCADE,
