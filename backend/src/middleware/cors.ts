@@ -24,17 +24,28 @@ const corsOptions: CorsOptions = {
       if (process.env.FRONTEND_URL) {
         allowedOrigins.push(process.env.FRONTEND_URL);
       }
-      // Common production patterns
-      allowedOrigins.push('https://*.vercel.app');
-      allowedOrigins.push('https://*.netlify.app');
+      // Common production patterns for deployment platforms
+      allowedOrigins.push('https://crafty-coffee-lab.vercel.app');
+      allowedOrigins.push('https://crafty-coffee-lab-git-main.vercel.app');
     }
 
+    // Check if origin is in allowed list
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
-    } else {
-      console.warn(`CORS blocked request from origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
+      return;
     }
+    
+    // In production, also allow any Vercel deployment for this project
+    if (process.env.NODE_ENV === 'production' && origin) {
+      const isVercelDomain = origin.includes('crafty-coffee-lab') && origin.includes('vercel.app');
+      if (isVercelDomain) {
+        callback(null, true);
+        return;
+      }
+    }
+    
+    console.warn(`CORS blocked request from origin: ${origin}`);
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   optionsSuccessStatus: 200, // Support legacy browsers
