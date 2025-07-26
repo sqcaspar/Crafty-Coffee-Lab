@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import type { TraditionalSCAEvaluation } from 'coffee-tracker-shared';
+import type { TraditionalSCAEvaluation } from '../../shared';
 import { calculateSCAScore, getSCAScoreInterpretation, formatScore, getScoreColor } from '../../utils/scoreCalculations';
 
 interface TraditionalSCAFormProps {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { SensationRecord, EvaluationSystem, QuickTastingAssessment } from 'coffee-tracker-shared';
+import type { SensationRecord, EvaluationSystem, QuickTastingAssessment } from '../../shared';
 import TraditionalSCAForm from '../forms/TraditionalSCAForm';
 import CVAAffectiveForm from '../forms/CVAAffectiveForm';
 import CVADescriptiveForm from '../forms/CVADescriptiveForm';

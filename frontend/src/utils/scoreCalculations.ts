@@ -3,7 +3,7 @@
  * Based on official SCA and CVA evaluation methodology
  */
 
-import type { TraditionalSCAEvaluation, CVAAffectiveAssessment } from 'coffee-tracker-shared';
+import type { TraditionalSCAEvaluation, CVAAffectiveAssessment } from '../../shared';
 
 /**
  * SCA Cupping Protocol Score Calculation (2004 SCA Protocol)

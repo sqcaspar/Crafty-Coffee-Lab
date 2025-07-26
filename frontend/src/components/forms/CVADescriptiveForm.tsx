@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { CVADescriptiveAssessment } from 'coffee-tracker-shared';
+import type { CVADescriptiveAssessment } from '../../shared';
 
 interface CVADescriptiveFormProps {
   value: CVADescriptiveAssessment;

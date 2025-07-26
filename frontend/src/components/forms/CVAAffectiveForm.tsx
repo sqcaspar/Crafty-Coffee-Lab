@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import type { CVAAffectiveAssessment } from 'coffee-tracker-shared';
+import type { CVAAffectiveAssessment } from '../../shared';
 import { calculateCVAScore, getCVAScoreInterpretation, formatScore, getScoreColor } from '../../utils/scoreCalculations';
 
 interface CVAAffectiveFormProps {
