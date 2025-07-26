@@ -4,7 +4,7 @@ import {
   CollectionSummary, 
   CollectionFilter,
   CollectionColor 
-} from '../../../shared/src/types/collection';
+} from '../shared/types/collection';
 import { collectionService, getCollectionColorOptions } from '../services/collectionService';
 import { useToast } from '../components/ui/ToastContainer';
 import CollectionManager from './CollectionManager';

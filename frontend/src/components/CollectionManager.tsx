@@ -4,7 +4,7 @@ import {
   CollectionInput, 
   CollectionUpdate, 
   CollectionColor 
-} from '../../../shared/src/types/collection';
+} from '../shared/types/collection';
 import { 
   collectionService, 
   getCollectionColorOptions, 

@@ -1,5 +1,5 @@
 import { Recipe, RecipeSummary } from '../shared/types/recipe';
-import { Collection } from '../../../shared/src/types/collection';
+import { Collection } from '../shared/types/collection';
 import { recipeService } from './recipeService';
 import { collectionService } from './collectionService';
 

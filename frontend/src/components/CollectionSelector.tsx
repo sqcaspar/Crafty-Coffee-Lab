@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Collection, CollectionSummary } from '../../../shared/src/types/collection';
+import { Collection, CollectionSummary } from '../shared/types/collection';
 import { collectionService, getCollectionColorOptions } from '../services/collectionService';
 import { useToast } from '../components/ui/ToastContainer';
 

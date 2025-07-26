@@ -6,7 +6,7 @@ import {
   CollectionFilter,
   BatchCollectionOperation,
   CollectionAssignment
-} from '../../../shared/src/types/collection';
+} from '../shared/types/collection';
 import { apiClient, ApiResponse } from './api';
 
 export interface CollectionServiceOptions {

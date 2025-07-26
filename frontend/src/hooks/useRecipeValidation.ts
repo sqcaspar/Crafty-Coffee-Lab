@@ -31,7 +31,7 @@ import {
   AftertasteFieldSchema,
   BalanceFieldSchema,
   TastingNotesFieldSchema
-} from '../../../shared/src/validation/recipeSchema';
+} from '../shared/validation/recipeSchema';
 
 // Individual field validation result
 export interface FieldValidationResult {
