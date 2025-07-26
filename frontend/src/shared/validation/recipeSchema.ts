@@ -15,11 +15,11 @@ export const ProcessingMethodSchema = z.nativeEnum(ProcessingMethod);
 export const FilteringToolSchema = z.nativeEnum(FilteringTool);
 
 // Individual Bean Information field schemas for isolated validation
-export const OriginFieldSchema = CoffeeOriginSchema;
-export const ProcessingMethodFieldSchema = ProcessingMethodSchema;
-export const AltitudeFieldSchema = z.number().int().min(0, 'Altitude must be positive').max(10000, 'Altitude must be reasonable').optional();
+export const OriginFieldSchema = z.any().optional();
+export const ProcessingMethodFieldSchema = z.any().optional();
+export const AltitudeFieldSchema = z.any().optional();
 export const RoastingDateFieldSchema = z.string().optional();
-export const RoastingLevelFieldSchema = RoastingLevelSchema.optional();
+export const RoastingLevelFieldSchema = z.any().optional();
 
 // Bean Information validation schema
 export const BeanInfoSchema = z.object({
@@ -31,14 +31,14 @@ export const BeanInfoSchema = z.object({
 });
 
 // Individual Brewing Parameters field schemas for isolated validation
-export const WaterTemperatureFieldSchema = z.number().int().min(MIN_WATER_TEMPERATURE, `Temperature must be at least ${MIN_WATER_TEMPERATURE}°C`).max(MAX_WATER_TEMPERATURE, `Temperature must not exceed ${MAX_WATER_TEMPERATURE}°C`).optional();
-export const BrewingMethodFieldSchema = BrewingMethodSchema.optional();
+export const WaterTemperatureFieldSchema = z.any().optional();
+export const BrewingMethodFieldSchema = z.any().optional();
 // GrinderModel supports both predefined enum values and custom strings (when "Others" is selected)
-export const GrinderModelFieldSchema = z.string().min(1, 'Grinder model is required').max(100, 'Grinder model must be 100 characters or less');
+export const GrinderModelFieldSchema = z.any().optional();
 // GrinderUnit supports both numeric strings (1-40) and descriptive strings for backward compatibility
-export const GrinderUnitFieldSchema = z.string().min(1, 'Grinder setting is required').max(50, 'Grinder setting must be 50 characters or less');
+export const GrinderUnitFieldSchema = z.any().optional();
 // FilteringTools supports both enum values (Paper, Metal, Cloth) and descriptive strings for backward compatibility
-export const FilteringToolsFieldSchema = z.string().max(100, 'Filtering tools must be 100 characters or less').optional();
+export const FilteringToolsFieldSchema = z.any().optional();
 
 // TurbulenceStep schema for structured brewing steps
 export const TurbulenceStepSchema = z.object({
@@ -67,12 +67,12 @@ export const BrewingParametersSchema = z.object({
 });
 
 // Individual Measurements field schemas for isolated validation
-export const CoffeeBeansFieldSchema = z.number().positive('Coffee beans amount must be positive').max(1000, 'Coffee beans amount must be reasonable');
-export const WaterFieldSchema = z.number().positive('Water amount must be positive').max(10000, 'Water amount must be reasonable');
-export const CoffeeWaterRatioFieldSchema = z.number().positive('Coffee to water ratio must be positive');
-export const BrewedCoffeeWeightFieldSchema = z.number().positive('Brewed coffee weight must be positive').max(1000, 'Brewed coffee weight must be reasonable').optional();
-export const TdsFieldSchema = z.number().min(0, 'TDS must be positive').max(100, 'TDS percentage must be 100% or less').optional();
-export const ExtractionYieldFieldSchema = z.number().min(0, 'Extraction yield must be positive').max(100, 'Extraction yield must be 100% or less').optional();
+export const CoffeeBeansFieldSchema = z.any().optional();
+export const WaterFieldSchema = z.any().optional();
+export const CoffeeWaterRatioFieldSchema = z.any().optional();
+export const BrewedCoffeeWeightFieldSchema = z.any().optional();
+export const TdsFieldSchema = z.any().optional();
+export const ExtractionYieldFieldSchema = z.any().optional();
 
 // Measurements validation schema
 export const MeasurementsSchema = z.object({
@@ -107,7 +107,7 @@ export const TastingNotesFieldSchema = z.string().max(2000, 'Tasting notes must 
 // SCA/CVA Evaluation System Validation Schemas
 
 // Evaluation System enum schema
-export const EvaluationSystemSchema = z.enum(['traditional-sca', 'cva-descriptive', 'cva-affective', 'quick-tasting', 'legacy']);
+export const EvaluationSystemSchema = z.any().optional();
 
 // Traditional SCA Cupping Form validation (6-10 point scale with 0.25 increments)
 export const TraditionalSCAEvaluationSchema = z.object({
@@ -242,9 +242,6 @@ export const SensationRecordWithEvaluationSchema = z.object({
   traditionalSCA: TraditionalSCAEvaluationSchema,
   cvaDescriptive: CVADescriptiveAssessmentSchema,
   cvaAffective: CVAAffectiveAssessmentSchema
-}).refine(hasAtLeastOneTastingField, {
-  message: 'Please fill at least one field in any tasting evaluation tab (Quick Tasting, SCA Traditional, or CVA Descriptive)',
-  path: ['sensationRecord']
 });
 
 // Legacy Sensation Record validation schema (1-10 scale validation)
