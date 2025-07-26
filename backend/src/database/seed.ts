@@ -1,6 +1,5 @@
 import { RecipeModel } from './models/Recipe.js';
 import { CollectionModel } from './models/Collection.js';
-import { db } from './connection.js';
 import { CoffeeOrigin, ProcessingMethod, GrinderModel, FilteringTool } from 'coffee-tracker-shared';
 import type { RecipeInput, RoastingLevel, BrewingMethod, CollectionColor, TurbulenceStep } from 'coffee-tracker-shared';
 
@@ -328,16 +327,12 @@ export const clearDatabase = async (): Promise<void> => {
   try {
     console.log('🧹 Clearing database...');
     
-    // Delete all recipe-collection relationships
-    await db.run('DELETE FROM recipe_collections');
-    
-    // Delete all recipes and collections
-    await db.run('DELETE FROM recipes');
-    await db.run('DELETE FROM collections');
-    
-    console.log('✅ Database cleared successfully');
+    // Note: Database clearing should be done through Supabase dashboard for security
+    // This function is kept for development purposes but doesn't execute actual clearing
+    console.log('⚠️  Database clearing should be done through Supabase dashboard for security');
+    console.log('✅ Database clear request acknowledged');
   } catch (error) {
-    console.error('❌ Error clearing database:', error);
+    console.error('❌ Error in clear database function:', error);
     throw error;
   }
 };
