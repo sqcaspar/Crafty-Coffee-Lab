@@ -25,5 +25,18 @@ echo "✅ Build successful!"
 echo "🌐 Deploying to Vercel..."
 npx vercel --prod
 
-echo "✅ Deployment complete!"
-echo "🎉 Your Coffee Brewing Recipe Tracker is now live!"
+if [ $? -eq 0 ]; then
+    echo "✅ Deployment complete!"
+    echo "🎉 Your Coffee Brewing Recipe Tracker is now live!"
+    echo ""
+    echo "Next steps:"
+    echo "1. Update your Railway backend CORS_ORIGIN with the Vercel URL"
+    echo "2. Test the deployed application"
+    echo "3. Run the deployment check script"
+    echo ""
+    echo "Test command:"
+    echo "bash /Users/hoyinng/claude\ project/scripts/check-deployment.sh [BACKEND_URL] [FRONTEND_URL]"
+else
+    echo "❌ Deployment failed. Please check the errors above."
+    exit 1
+fi

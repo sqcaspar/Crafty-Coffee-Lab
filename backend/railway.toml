@@ -10,4 +10,9 @@ restartPolicyMaxRetries = 3
 
 [environments.production.variables]
 NODE_ENV = "production"
-DATABASE_PATH = "/app/data/recipes.db"
+# Supabase Database Configuration (set these in Railway dashboard)
+# SUPABASE_URL = "https://your-project-id.supabase.co"
+# SUPABASE_ANON_KEY = "your-anon-key"
+# SUPABASE_SERVICE_KEY = "your-service-key"
+# DATABASE_URL = "postgresql://postgres:password@db.project-id.supabase.co:5432/postgres"
+# CORS_ORIGIN = "https://your-vercel-domain.vercel.app"

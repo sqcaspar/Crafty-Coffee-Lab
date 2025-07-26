@@ -273,10 +273,60 @@ export const recipeService = new RecipeService();
 
 // Utility functions for recipe operations
 export const formatRecipeForSave = (recipeInput: RecipeInput): RecipeInput => {
-  // Clean up empty optional fields
+  // Clean up empty optional fields and ensure proper types
   const cleaned = { ...recipeInput };
   
-  // Remove empty strings and convert to undefined
+  // Ensure sensation record numbers are properly typed
+  if (cleaned.sensationRecord) {
+    const sensation = cleaned.sensationRecord;
+    
+    // Convert string numbers to actual numbers for rating fields
+    const numericFields = [
+      'overallImpression', 'acidity', 'body', 'sweetness', 
+      'flavor', 'aftertaste', 'balance'
+    ];
+    
+    numericFields.forEach(field => {
+      const value = (sensation as any)[field];
+      if (typeof value === 'string' && value !== '') {
+        const numValue = parseFloat(value);
+        if (!isNaN(numValue)) {
+          (sensation as any)[field] = numValue;
+        }
+      } else if (value === '' || value === null) {
+        (sensation as any)[field] = undefined;
+      }
+    });
+    
+    // Handle evaluation system sub-objects
+    ['traditionalSCA', 'cvaDescriptive', 'cvaAffective', 'quickTasting'].forEach(systemKey => {
+      const system = (sensation as any)[systemKey];
+      if (system && typeof system === 'object') {
+        Object.keys(system).forEach(subKey => {
+          const subValue = system[subKey];
+          if (typeof subValue === 'string' && subValue !== '') {
+            const numValue = parseFloat(subValue);
+            if (!isNaN(numValue)) {
+              system[subKey] = numValue;
+            }
+          } else if (subValue === '' || subValue === null) {
+            system[subKey] = undefined;
+          }
+        });
+      }
+    });
+  }
+  
+  // Handle roasting date conversion
+  if (cleaned.beanInfo?.roastingDate) {
+    const dateValue = cleaned.beanInfo.roastingDate;
+    // If it's a date string (YYYY-MM-DD), convert to ISO datetime
+    if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+      cleaned.beanInfo.roastingDate = `${dateValue}T00:00:00.000Z`;
+    }
+  }
+  
+  // Remove empty strings and convert to undefined for other fields
   Object.keys(cleaned).forEach(key => {
     const value = (cleaned as any)[key];
     if (typeof value === 'object' && value !== null) {

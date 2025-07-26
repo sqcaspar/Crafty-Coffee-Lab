@@ -5,7 +5,7 @@ import {
   BeanInfoSchema, 
   BrewingParametersSchema, 
   MeasurementsInputSchema, 
-  SensationRecordSchema,
+  SensationRecordWithEvaluationSchema,
   // Individual field schemas for isolated validation
   OriginFieldSchema,
   ProcessingMethodFieldSchema,

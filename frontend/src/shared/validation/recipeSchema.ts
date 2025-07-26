@@ -184,6 +184,45 @@ export const CVAAffectiveAssessmentSchema = z.object({
   cvaScore: z.number().min(58, 'CVA score must be at least 58').max(100, 'CVA score must not exceed 100').multipleOf(0.25, 'CVA score must be rounded to nearest 0.25').optional()
 }).optional();
 
+// Helper function to check if at least one tasting field is filled
+const hasAtLeastOneTastingField = (data: any): boolean => {
+  // Check legacy Quick Tasting fields
+  const legacyFields = [
+    data.overallImpression,
+    data.acidity,
+    data.body,
+    data.sweetness,
+    data.flavor,
+    data.aftertaste,
+    data.balance,
+    data.tastingNotes
+  ];
+  
+  const hasLegacyField = legacyFields.some(field => 
+    field !== undefined && field !== null && field !== ''
+  );
+  
+  // Check Traditional SCA fields
+  const scaData = data.traditionalSCA;
+  const hasScaField = scaData && Object.values(scaData).some(field => 
+    field !== undefined && field !== null && field !== ''
+  );
+  
+  // Check CVA Descriptive fields
+  const cvaDescriptiveData = data.cvaDescriptive;
+  const hasCvaDescriptiveField = cvaDescriptiveData && Object.values(cvaDescriptiveData).some(field => 
+    field !== undefined && field !== null && field !== ''
+  );
+  
+  // Check CVA Affective fields
+  const cvaAffectiveData = data.cvaAffective;
+  const hasCvaAffectiveField = cvaAffectiveData && Object.values(cvaAffectiveData).some(field => 
+    field !== undefined && field !== null && field !== ''
+  );
+  
+  return hasLegacyField || hasScaField || hasCvaDescriptiveField || hasCvaAffectiveField;
+};
+
 // Updated Sensation Record schema with new evaluation systems
 export const SensationRecordWithEvaluationSchema = z.object({
   // Evaluation system indicator
@@ -203,6 +242,9 @@ export const SensationRecordWithEvaluationSchema = z.object({
   traditionalSCA: TraditionalSCAEvaluationSchema,
   cvaDescriptive: CVADescriptiveAssessmentSchema,
   cvaAffective: CVAAffectiveAssessmentSchema
+}).refine(hasAtLeastOneTastingField, {
+  message: 'Please fill at least one field in any tasting evaluation tab (Quick Tasting, SCA Traditional, or CVA Descriptive)',
+  path: ['sensationRecord']
 });
 
 // Legacy Sensation Record validation schema (1-10 scale validation)
