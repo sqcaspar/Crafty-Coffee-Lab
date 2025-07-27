@@ -1,6 +1,6 @@
 import app from './app.js';
 
-const PORT = process.env.PORT || 3001;
+const PORT = parseInt(process.env.PORT || '3001', 10);
 const HOST = '0.0.0.0'; // Bind to all interfaces for Railway compatibility
 
 app.listen(PORT, HOST, () => {
