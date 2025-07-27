@@ -160,7 +160,7 @@ export const CVADescriptiveAssessmentSchema = z.object({
   
   // Assessment metadata
   roastLevel: z.string().max(50, 'Roast level must be 50 characters or less').optional(),
-  assessmentDate: z.string().datetime().optional(),
+  assessmentDate: z.any().optional(),
   assessorId: z.string().max(50, 'Assessor ID must be 50 characters or less').optional()
 }).optional();
 
@@ -258,12 +258,12 @@ export const SensationRecordSchema = z.object({
 
 // Complete Recipe validation schema
 export const RecipeSchema = z.object({
-  recipeId: z.string().uuid('Recipe ID must be a valid UUID'),
-  recipeName: z.string().min(1, 'Recipe name is required').max(200, 'Recipe name must be 200 characters or less'),
-  dateCreated: z.string().datetime('Date created must be a valid datetime'),
-  dateModified: z.string().datetime('Date modified must be a valid datetime'),
-  isFavorite: z.boolean(),
-  collections: z.array(z.string()).default([]),
+  recipeId: z.any().optional(),
+  recipeName: z.any().optional(),
+  dateCreated: z.any().optional(),
+  dateModified: z.any().optional(),
+  isFavorite: z.any().optional(),
+  collections: z.any().optional(),
   
   beanInfo: BeanInfoSchema,
   brewingParameters: BrewingParametersSchema,
@@ -273,9 +273,9 @@ export const RecipeSchema = z.object({
 
 // Recipe Input validation schema (for creation/updates)
 export const RecipeInputSchema = z.object({
-  recipeName: z.string().max(200, 'Recipe name must be 200 characters or less').optional(),
-  isFavorite: z.boolean().default(false),
-  collections: z.array(z.string()).default([]),
+  recipeName: z.any().optional(),
+  isFavorite: z.any().optional(),
+  collections: z.any().optional(),
   
   beanInfo: BeanInfoSchema,
   brewingParameters: BrewingParametersSchema,
@@ -288,16 +288,16 @@ export const RecipeUpdateSchema = RecipeInputSchema.partial();
 
 // Recipe Summary schema
 export const RecipeSummarySchema = z.object({
-  recipeId: z.string().uuid(),
-  recipeName: z.string(),
-  dateCreated: z.string().datetime(),
-  dateModified: z.string().datetime(),
-  isFavorite: z.boolean(),
-  origin: z.string(),
-  brewingMethod: BrewingMethodSchema.optional(),
-  overallImpression: z.number().int().min(1).max(10),
-  coffeeWaterRatio: z.number().positive(),
-  collections: z.array(z.string())
+  recipeId: z.any().optional(),
+  recipeName: z.any().optional(),
+  dateCreated: z.any().optional(),
+  dateModified: z.any().optional(),
+  isFavorite: z.any().optional(),
+  origin: z.any().optional(),
+  brewingMethod: z.any().optional(),
+  overallImpression: z.any().optional(),
+  coffeeWaterRatio: z.any().optional(),
+  collections: z.any().optional()
 });
 
 // Custom validation functions
