@@ -100,6 +100,57 @@ router.post('/', asyncHandler(async (req: Request, res: Response) => {
     }
     console.log('FINAL evaluation_system before database:', transformedInput.sensationRecord.evaluationSystem);
     
+    // PHASE 1: Add field length validation to prevent "value too long" errors
+    // Database schema limits: recipe_name(200), origin(100), processing_method(50), grinder_model(100), grinder_unit(50), filtering_tools(100)
+    const validateFieldLengths = (input: any) => {
+      const lengthLimits = {
+        recipeName: 200,
+        'beanInfo.origin': 100,
+        'beanInfo.processingMethod': 50,
+        'beanInfo.coffeeBeanBrand': 100,
+        'beanInfo.roastingLevel': 20,
+        'brewingParameters.brewingMethod': 50,
+        'brewingParameters.grinderModel': 100,
+        'brewingParameters.grinderUnit': 50,
+        'brewingParameters.filteringTools': 100,
+        'turbulenceInfo.turbulence': 200,
+        'sensationRecord.evaluationSystem': 20
+      };
+      
+      const errors: string[] = [];
+      
+      // Helper function to check nested property lengths
+      const checkLength = (obj: any, path: string, limit: number) => {
+        const keys = path.split('.');
+        let value = obj;
+        for (const key of keys) {
+          value = value?.[key];
+        }
+        if (typeof value === 'string' && value.length > limit) {
+          console.log(`❌ Field '${path}' too long: ${value.length} chars (limit: ${limit})`);
+          console.log(`   Value: "${value.substring(0, 50)}${value.length > 50 ? '...' : ''}"`);
+          errors.push(`Field '${path}' is too long (${value.length} chars, limit: ${limit})`);
+          return false;
+        }
+        return true;
+      };
+      
+      // Check all length limits
+      for (const [fieldPath, limit] of Object.entries(lengthLimits)) {
+        checkLength(input, fieldPath, limit);
+      }
+      
+      return errors;
+    };
+    
+    console.log('🔍 Validating field lengths...');
+    const lengthErrors = validateFieldLengths(transformedInput);
+    if (lengthErrors.length > 0) {
+      console.error('❌ Field length validation failed:', lengthErrors);
+      throw createApiError.badRequest(`Field validation failed: ${lengthErrors.join(', ')}`);
+    }
+    console.log('✅ All fields within length limits');
+    
     // Log the database creation step
     console.log('Creating recipe in database...');
     const recipe = await RecipeModel.create(transformedInput as RecipeInput);
@@ -167,6 +218,54 @@ router.put('/:id', validateUUIDParam, asyncHandler(async (req: Request, res: Res
       }
     }
     console.log('UPDATE - FINAL evaluation_system before database:', transformedInput.sensationRecord?.evaluationSystem);
+    
+    // PHASE 1: Add field length validation for UPDATE as well
+    const validateFieldLengths = (input: any) => {
+      const lengthLimits = {
+        recipeName: 200,
+        'beanInfo.origin': 100,
+        'beanInfo.processingMethod': 50,
+        'beanInfo.coffeeBeanBrand': 100,
+        'beanInfo.roastingLevel': 20,
+        'brewingParameters.brewingMethod': 50,
+        'brewingParameters.grinderModel': 100,
+        'brewingParameters.grinderUnit': 50,
+        'brewingParameters.filteringTools': 100,
+        'turbulenceInfo.turbulence': 200,
+        'sensationRecord.evaluationSystem': 20
+      };
+      
+      const errors: string[] = [];
+      
+      const checkLength = (obj: any, path: string, limit: number) => {
+        const keys = path.split('.');
+        let value = obj;
+        for (const key of keys) {
+          value = value?.[key];
+        }
+        if (typeof value === 'string' && value.length > limit) {
+          console.log(`UPDATE - ❌ Field '${path}' too long: ${value.length} chars (limit: ${limit})`);
+          console.log(`UPDATE -    Value: "${value.substring(0, 50)}${value.length > 50 ? '...' : ''}"`);
+          errors.push(`Field '${path}' is too long (${value.length} chars, limit: ${limit})`);
+          return false;
+        }
+        return true;
+      };
+      
+      for (const [fieldPath, limit] of Object.entries(lengthLimits)) {
+        checkLength(input, fieldPath, limit);
+      }
+      
+      return errors;
+    };
+    
+    console.log('UPDATE - 🔍 Validating field lengths...');
+    const lengthErrors = validateFieldLengths(transformedInput);
+    if (lengthErrors.length > 0) {
+      console.error('UPDATE - ❌ Field length validation failed:', lengthErrors);
+      throw createApiError.badRequest(`Field validation failed: ${lengthErrors.join(', ')}`);
+    }
+    console.log('UPDATE - ✅ All fields within length limits');
     
     // Update the recipe
     const updatedRecipe = await RecipeModel.update(id, transformedInput as RecipeInput);
