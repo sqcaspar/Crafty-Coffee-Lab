@@ -2,6 +2,8 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
+console.log('API_BASE_URL:', API_BASE_URL); // Debug log to verify URL
+
 // API Response types
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -35,8 +37,12 @@ export class ApiClient {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
+    // Build full URL - ensure we use absolute URL for external APIs
+    const fullUrl = endpoint.startsWith('http') ? endpoint : `${this.baseURL}${endpoint}`;
+    console.log('Making request to:', fullUrl); // Debug log
+
     try {
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
+      const response = await fetch(fullUrl, {
         ...fetchOptions,
         signal: controller.signal,
         headers: {
