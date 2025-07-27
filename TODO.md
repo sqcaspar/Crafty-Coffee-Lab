@@ -9,7 +9,12 @@
 *Tasks currently being worked on*
 
 ### 🔄 Current Session Tasks
-*No tasks currently active*
+- [✅] **Fix Vercel Auto-Deployment Issue** - RESOLVED
+  - ✅ Identified issue: Vercel was deploying from root instead of frontend directory
+  - ✅ Manually deployed from frontend directory using `npx vercel --prod`
+  - ✅ New production URL: https://frontend-lot9llgsc-caspars-projects-c6ee23d8.vercel.app
+  - ✅ Latest validation-free code now live in production
+  - 🔄 Need to test recipe saving on new deployment
 
 ---
 
