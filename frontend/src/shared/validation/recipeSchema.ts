@@ -40,20 +40,17 @@ export const GrinderUnitFieldSchema = z.any().optional();
 // FilteringTools supports both enum values (Paper, Metal, Cloth) and descriptive strings for backward compatibility
 export const FilteringToolsFieldSchema = z.any().optional();
 
-// TurbulenceStep schema for structured brewing steps
+// TurbulenceStep schema for structured brewing steps - NO CONSTRAINTS
 export const TurbulenceStepSchema = z.object({
-  actionTime: z.string().min(1, 'Action time is required').max(10, 'Action time must be 10 characters or less'),
-  actionDetails: z.string().min(1, 'Action details are required').max(100, 'Action details must be 100 characters or less'),
-  volume: z.string().min(1, 'Volume is required').max(20, 'Volume must be 20 characters or less')
+  actionTime: z.any().optional(),
+  actionDetails: z.any().optional(),
+  volume: z.any().optional()
 });
 
 // Turbulence supports both legacy string format and new structured steps for backward compatibility
-export const TurbulenceFieldSchema = z.union([
-  z.string().max(200, 'Turbulence description must be 200 characters or less'),
-  z.array(TurbulenceStepSchema).min(1, 'At least one turbulence step is required').max(10, 'Maximum 10 turbulence steps allowed')
-]).optional();
+export const TurbulenceFieldSchema = z.any().optional();
 
-export const AdditionalNotesFieldSchema = z.string().max(1000, 'Additional notes must be 1000 characters or less').optional();
+export const AdditionalNotesFieldSchema = z.any().optional();
 
 // Brewing Parameters validation schema
 export const BrewingParametersSchema = z.object({
@@ -109,79 +106,60 @@ export const TastingNotesFieldSchema = z.any().optional();
 // Evaluation System enum schema
 export const EvaluationSystemSchema = z.any().optional();
 
-// Traditional SCA Cupping Form validation (6-10 point scale with 0.25 increments)
+// Traditional SCA Cupping Form validation - NO CONSTRAINTS
 export const TraditionalSCAEvaluationSchema = z.object({
-  // Quality attributes (6.00-10.00 points with 0.25 increments)
-  fragrance: z.number().min(6, 'Fragrance score must be at least 6').max(10, 'Fragrance score must not exceed 10').multipleOf(0.25, 'Fragrance must be in 0.25 increments').optional(),
-  aroma: z.number().min(6, 'Aroma score must be at least 6').max(10, 'Aroma score must not exceed 10').multipleOf(0.25, 'Aroma must be in 0.25 increments').optional(),
-  flavor: z.number().min(6, 'Flavor score must be at least 6').max(10, 'Flavor score must not exceed 10').multipleOf(0.25, 'Flavor must be in 0.25 increments').optional(),
-  aftertaste: z.number().min(6, 'Aftertaste score must be at least 6').max(10, 'Aftertaste score must not exceed 10').multipleOf(0.25, 'Aftertaste must be in 0.25 increments').optional(),
-  acidity: z.number().min(6, 'Acidity score must be at least 6').max(10, 'Acidity score must not exceed 10').multipleOf(0.25, 'Acidity must be in 0.25 increments').optional(),
-  acidityIntensity: z.enum(['High', 'Medium', 'Low']).optional(),
-  body: z.number().min(6, 'Body score must be at least 6').max(10, 'Body score must not exceed 10').multipleOf(0.25, 'Body must be in 0.25 increments').optional(),
-  bodyLevel: z.enum(['Heavy', 'Medium', 'Thin']).optional(),
-  balance: z.number().min(6, 'Balance score must be at least 6').max(10, 'Balance score must not exceed 10').multipleOf(0.25, 'Balance must be in 0.25 increments').optional(),
-  overall: z.number().min(6, 'Overall score must be at least 6').max(10, 'Overall score must not exceed 10').multipleOf(0.25, 'Overall must be in 0.25 increments').optional(),
-  
-  // Cup characteristics (0-10 points, 2 points per cup)
-  uniformity: z.number().min(0, 'Uniformity score must be at least 0').max(10, 'Uniformity score must not exceed 10').multipleOf(2, 'Uniformity must be in 2-point increments').optional(),
-  cleanCup: z.number().min(0, 'Clean Cup score must be at least 0').max(10, 'Clean Cup score must not exceed 10').multipleOf(2, 'Clean Cup must be in 2-point increments').optional(),
-  sweetness: z.number().min(0, 'Sweetness score must be at least 0').max(10, 'Sweetness score must not exceed 10').multipleOf(2, 'Sweetness must be in 2-point increments').optional(),
-  
-  // Defect penalties (negative values)
-  taintDefects: z.number().min(0, 'Taint defects cannot be negative').max(20, 'Maximum 10 taint defects allowed').multipleOf(2, 'Taint defects must be in 2-point increments').optional(),
-  faultDefects: z.number().min(0, 'Fault defects cannot be negative').max(40, 'Maximum 10 fault defects allowed').multipleOf(4, 'Fault defects must be in 4-point increments').optional(),
-  
-  // Calculated final score (36-100 range)
-  finalScore: z.number().min(36, 'Final score must be at least 36').max(100, 'Final score must not exceed 100').multipleOf(0.25, 'Final score must be in 0.25 increments').optional()
+  fragrance: z.any().optional(),
+  aroma: z.any().optional(),
+  flavor: z.any().optional(),
+  aftertaste: z.any().optional(),
+  acidity: z.any().optional(),
+  acidityIntensity: z.any().optional(),
+  body: z.any().optional(),
+  bodyLevel: z.any().optional(),
+  balance: z.any().optional(),
+  overall: z.any().optional(),
+  uniformity: z.any().optional(),
+  cleanCup: z.any().optional(),
+  sweetness: z.any().optional(),
+  taintDefects: z.any().optional(),
+  faultDefects: z.any().optional(),
+  finalScore: z.any().optional()
 }).optional();
 
-// CVA Descriptive Assessment validation (0-15 intensity scale)
+// CVA Descriptive Assessment validation - NO CONSTRAINTS
 export const CVADescriptiveAssessmentSchema = z.object({
-  // Intensity ratings (0-15 integer scale)
-  fragrance: z.number().int().min(0, 'Fragrance intensity must be at least 0').max(15, 'Fragrance intensity must not exceed 15').optional(),
-  aroma: z.number().int().min(0, 'Aroma intensity must be at least 0').max(15, 'Aroma intensity must not exceed 15').optional(),
-  flavor: z.number().int().min(0, 'Flavor intensity must be at least 0').max(15, 'Flavor intensity must not exceed 15').optional(),
-  aftertaste: z.number().int().min(0, 'Aftertaste intensity must be at least 0').max(15, 'Aftertaste intensity must not exceed 15').optional(),
-  acidity: z.number().int().min(0, 'Acidity intensity must be at least 0').max(15, 'Acidity intensity must not exceed 15').optional(),
-  sweetness: z.number().int().min(0, 'Sweetness intensity must be at least 0').max(15, 'Sweetness intensity must not exceed 15').optional(),
-  mouthfeel: z.number().int().min(0, 'Mouthfeel intensity must be at least 0').max(15, 'Mouthfeel intensity must not exceed 15').optional(),
-  
-  // CATA descriptor selections with limits
-  fragranceAromaDescriptors: z.array(z.string()).max(5, 'Maximum 5 fragrance/aroma descriptors allowed').optional(),
-  flavorAftertasteDescriptors: z.array(z.string()).max(5, 'Maximum 5 flavor/aftertaste descriptors allowed').optional(),
-  mainTastes: z.array(z.enum(['salty', 'sour', 'sweet', 'bitter', 'umami'])).max(2, 'Maximum 2 main tastes allowed').optional(),
-  mouthfeelDescriptors: z.array(z.enum(['metallic', 'rough', 'oily', 'smooth', 'mouth-drying'])).max(2, 'Maximum 2 mouthfeel descriptors allowed').optional(),
-  
-  // Free text descriptors
-  acidityDescriptors: z.string().max(500, 'Acidity descriptors must be 500 characters or less').optional(),
-  sweetnessDescriptors: z.string().max(500, 'Sweetness descriptors must be 500 characters or less').optional(),
-  additionalNotes: z.string().max(1000, 'Additional notes must be 1000 characters or less').optional(),
-  
-  // Assessment metadata
-  roastLevel: z.string().max(50, 'Roast level must be 50 characters or less').optional(),
+  fragrance: z.any().optional(),
+  aroma: z.any().optional(),
+  flavor: z.any().optional(),
+  aftertaste: z.any().optional(),
+  acidity: z.any().optional(),
+  sweetness: z.any().optional(),
+  mouthfeel: z.any().optional(),
+  fragranceAromaDescriptors: z.any().optional(),
+  flavorAftertasteDescriptors: z.any().optional(),
+  mainTastes: z.any().optional(),
+  mouthfeelDescriptors: z.any().optional(),
+  acidityDescriptors: z.any().optional(),
+  sweetnessDescriptors: z.any().optional(),
+  additionalNotes: z.any().optional(),
+  roastLevel: z.any().optional(),
   assessmentDate: z.any().optional(),
-  assessorId: z.string().max(50, 'Assessor ID must be 50 characters or less').optional()
+  assessorId: z.any().optional()
 }).optional();
 
-// CVA Affective Assessment validation (1-9 quality scale)
+// CVA Affective Assessment validation - NO CONSTRAINTS
 export const CVAAffectiveAssessmentSchema = z.object({
-  // Quality impression ratings (1-9 integer scale)
-  fragrance: z.number().int().min(1, 'Fragrance quality must be at least 1').max(9, 'Fragrance quality must not exceed 9').optional(),
-  aroma: z.number().int().min(1, 'Aroma quality must be at least 1').max(9, 'Aroma quality must not exceed 9').optional(),
-  flavor: z.number().int().min(1, 'Flavor quality must be at least 1').max(9, 'Flavor quality must not exceed 9').optional(),
-  aftertaste: z.number().int().min(1, 'Aftertaste quality must be at least 1').max(9, 'Aftertaste quality must not exceed 9').optional(),
-  acidity: z.number().int().min(1, 'Acidity quality must be at least 1').max(9, 'Acidity quality must not exceed 9').optional(),
-  sweetness: z.number().int().min(1, 'Sweetness quality must be at least 1').max(9, 'Sweetness quality must not exceed 9').optional(),
-  mouthfeel: z.number().int().min(1, 'Mouthfeel quality must be at least 1').max(9, 'Mouthfeel quality must not exceed 9').optional(),
-  overall: z.number().int().min(1, 'Overall quality must be at least 1').max(9, 'Overall quality must not exceed 9').optional(),
-  
-  // Cup uniformity and defect counts (0-5 cups each)
-  nonUniformCups: z.number().int().min(0, 'Non-uniform cups cannot be negative').max(5, 'Maximum 5 non-uniform cups').optional(),
-  defectiveCups: z.number().int().min(0, 'Defective cups cannot be negative').max(5, 'Maximum 5 defective cups').optional(),
-  
-  // Calculated CVA score (58.00-100.00, rounded to nearest 0.25)
-  cvaScore: z.number().min(58, 'CVA score must be at least 58').max(100, 'CVA score must not exceed 100').multipleOf(0.25, 'CVA score must be rounded to nearest 0.25').optional()
+  fragrance: z.any().optional(),
+  aroma: z.any().optional(),
+  flavor: z.any().optional(),
+  aftertaste: z.any().optional(),
+  acidity: z.any().optional(),
+  sweetness: z.any().optional(),
+  mouthfeel: z.any().optional(),
+  overall: z.any().optional(),
+  nonUniformCups: z.any().optional(),
+  defectiveCups: z.any().optional(),
+  cvaScore: z.any().optional()
 }).optional();
 
 // Helper function to check if at least one tasting field is filled
