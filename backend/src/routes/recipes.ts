@@ -64,12 +64,19 @@ router.get('/:id', validateUUIDParam, asyncHandler(async (req: Request, res: Res
  * Create a new recipe
  */
 router.post('/', asyncHandler(async (req: Request, res: Response) => {
+  console.log('=== POST /api/recipes - Starting recipe creation ===');
+  console.log('Request body:', JSON.stringify(req.body, null, 2));
+  
   try {
-    // Transform and enhance input data
+    // Log the transformation step
+    console.log('Transforming input data...');
     const transformedInput = transformRecipeInput(req.body);
+    console.log('Transformed input:', JSON.stringify(transformedInput, null, 2));
     
-    // Create the recipe  
+    // Log the database creation step
+    console.log('Creating recipe in database...');
     const recipe = await RecipeModel.create(transformedInput as RecipeInput);
+    console.log('Recipe created successfully:', recipe.recipe_id);
     
     const response: RecipeResponse = {
       success: true,
@@ -77,12 +84,21 @@ router.post('/', asyncHandler(async (req: Request, res: Response) => {
       message: 'Recipe created successfully'
     };
     
+    console.log('=== POST /api/recipes - Success ===');
     res.status(201).json(response);
   } catch (error) {
+    console.error('=== POST /api/recipes - Error ===');
+    console.error('Error type:', error?.constructor?.name);
+    console.error('Error message:', error instanceof Error ? error.message : String(error));
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    
     if (error instanceof Error && error.message.includes('UNIQUE constraint')) {
+      console.log('Throwing conflict error for duplicate recipe');
       throw createApiError.conflict('A recipe with this name already exists');
     }
-    throw createApiError.internalServer('Failed to create recipe');
+    
+    console.log('Throwing internal server error');
+    throw createApiError.internalServer(`Failed to create recipe: ${error instanceof Error ? error.message : String(error)}`);
   }
 }));
 
