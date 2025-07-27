@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS recipes (
   tasting_notes TEXT,
   
   -- Evaluation System Indicator
-  evaluation_system VARCHAR(20) CHECK (evaluation_system IN ('traditional-sca', 'cva-descriptive', 'cva-affective', 'legacy')),
+  evaluation_system VARCHAR(20) CHECK (evaluation_system IN ('traditional-sca', 'cva-descriptive', 'cva-affective', 'quick-tasting', 'legacy')),
   
   -- Traditional SCA Cupping Form (6-10 point scale with 0.25 increments)
   sca_fragrance DECIMAL(4,2) CHECK (sca_fragrance >= 6 AND sca_fragrance <= 10),

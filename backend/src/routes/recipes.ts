@@ -73,19 +73,32 @@ router.post('/', asyncHandler(async (req: Request, res: Response) => {
     const transformedInput = transformRecipeInput(req.body);
     console.log('Transformed input:', JSON.stringify(transformedInput, null, 2));
     
-    // Fix evaluation_system to ensure valid value for Supabase constraint
-    if (transformedInput.sensationRecord?.evaluationSystem) {
-      const validSystems = ['traditional-sca', 'cva-descriptive', 'cva-affective', 'quick-tasting', 'legacy'];
-      if (!validSystems.includes(transformedInput.sensationRecord.evaluationSystem)) {
-        console.log(`Invalid evaluation_system: ${transformedInput.sensationRecord.evaluationSystem}, defaulting to 'legacy'`);
+    // CRITICAL: Fix evaluation_system to ensure database constraint compliance
+    // Database constraint only accepts: 'traditional-sca', 'cva-descriptive', 'cva-affective', 'legacy'
+    // Frontend may send 'quick-tasting' which is NOT in the constraint - convert to 'legacy'
+    if (transformedInput.sensationRecord) {
+      const databaseValidSystems = ['traditional-sca', 'cva-descriptive', 'cva-affective', 'legacy'];
+      const currentSystem = transformedInput.sensationRecord.evaluationSystem;
+      
+      console.log(`Evaluation system validation: received '${currentSystem}'`);
+      
+      if (!currentSystem || currentSystem === 'quick-tasting') {
+        // Quick-tasting is not supported by database constraint - convert to legacy
+        console.log(`Converting '${currentSystem}' to 'legacy' for database compatibility`);
         transformedInput.sensationRecord.evaluationSystem = 'legacy';
+      } else if (!databaseValidSystems.includes(currentSystem)) {
+        // Any other invalid value
+        console.log(`Invalid evaluation_system: '${currentSystem}', defaulting to 'legacy'`);
+        transformedInput.sensationRecord.evaluationSystem = 'legacy';
+      } else {
+        console.log(`Valid evaluation_system: '${currentSystem}' - keeping as is`);
       }
-    } else if (transformedInput.sensationRecord) {
-      // Ensure we always have a valid evaluation_system
-      console.log('No evaluation_system provided, defaulting to legacy');
-      transformedInput.sensationRecord.evaluationSystem = 'legacy';
+    } else {
+      // No sensationRecord at all - this shouldn't happen but handle it
+      console.log('No sensationRecord provided - creating one with legacy evaluation_system');
+      transformedInput.sensationRecord = { evaluationSystem: 'legacy' };
     }
-    console.log('Final evaluation_system:', transformedInput.sensationRecord?.evaluationSystem);
+    console.log('FINAL evaluation_system before database:', transformedInput.sensationRecord.evaluationSystem);
     
     // Log the database creation step
     console.log('Creating recipe in database...');
@@ -131,6 +144,29 @@ router.put('/:id', validateUUIDParam, asyncHandler(async (req: Request, res: Res
     
     // Transform input data
     const transformedInput = transformRecipeInput(req.body);
+    
+    // CRITICAL: Fix evaluation_system to ensure database constraint compliance
+    // Database constraint only accepts: 'traditional-sca', 'cva-descriptive', 'cva-affective', 'legacy'
+    // Frontend may send 'quick-tasting' which is NOT in the constraint - convert to 'legacy'
+    if (transformedInput.sensationRecord) {
+      const databaseValidSystems = ['traditional-sca', 'cva-descriptive', 'cva-affective', 'legacy'];
+      const currentSystem = transformedInput.sensationRecord.evaluationSystem;
+      
+      console.log(`UPDATE - Evaluation system validation: received '${currentSystem}'`);
+      
+      if (!currentSystem || currentSystem === 'quick-tasting') {
+        // Quick-tasting is not supported by database constraint - convert to legacy
+        console.log(`UPDATE - Converting '${currentSystem}' to 'legacy' for database compatibility`);
+        transformedInput.sensationRecord.evaluationSystem = 'legacy';
+      } else if (!databaseValidSystems.includes(currentSystem)) {
+        // Any other invalid value
+        console.log(`UPDATE - Invalid evaluation_system: '${currentSystem}', defaulting to 'legacy'`);
+        transformedInput.sensationRecord.evaluationSystem = 'legacy';
+      } else {
+        console.log(`UPDATE - Valid evaluation_system: '${currentSystem}' - keeping as is`);
+      }
+    }
+    console.log('UPDATE - FINAL evaluation_system before database:', transformedInput.sensationRecord?.evaluationSystem);
     
     // Update the recipe
     const updatedRecipe = await RecipeModel.update(id, transformedInput as RecipeInput);

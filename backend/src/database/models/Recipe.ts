@@ -139,9 +139,18 @@ export class RecipeModel {
   private static prepareEvaluationData(input: RecipeInput) {
     const sensation = input.sensationRecord;
     
+    // Explicit handling of evaluation_system field
+    let evaluationSystem = sensation.evaluationSystem;
+    if (!evaluationSystem) {
+      console.log('RecipeModel: No evaluation_system provided, using NULL for database');
+      evaluationSystem = null;
+    } else {
+      console.log(`RecipeModel: Using evaluation_system: '${evaluationSystem}'`);
+    }
+    
     return {
-      // Evaluation system
-      evaluation_system: sensation.evaluationSystem ?? null,
+      // Evaluation system (explicitly handled)
+      evaluation_system: evaluationSystem,
       
       // Legacy fields
       overall_impression: sensation.overallImpression ?? null,

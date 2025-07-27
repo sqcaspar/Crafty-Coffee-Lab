@@ -8,6 +8,7 @@
     "build:railway": "tsc --project tsconfig.build.json",
     "build:dev": "tsc",
     "start": "node dist/server.js",
+    "migrate:constraint": "ts-node scripts/migrate-constraint.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
