@@ -73,6 +73,20 @@ router.post('/', asyncHandler(async (req: Request, res: Response) => {
     const transformedInput = transformRecipeInput(req.body);
     console.log('Transformed input:', JSON.stringify(transformedInput, null, 2));
     
+    // Fix evaluation_system to ensure valid value for Supabase constraint
+    if (transformedInput.sensationRecord?.evaluationSystem) {
+      const validSystems = ['traditional-sca', 'cva-descriptive', 'cva-affective', 'quick-tasting', 'legacy'];
+      if (!validSystems.includes(transformedInput.sensationRecord.evaluationSystem)) {
+        console.log(`Invalid evaluation_system: ${transformedInput.sensationRecord.evaluationSystem}, defaulting to 'legacy'`);
+        transformedInput.sensationRecord.evaluationSystem = 'legacy';
+      }
+    } else if (transformedInput.sensationRecord) {
+      // Ensure we always have a valid evaluation_system
+      console.log('No evaluation_system provided, defaulting to legacy');
+      transformedInput.sensationRecord.evaluationSystem = 'legacy';
+    }
+    console.log('Final evaluation_system:', transformedInput.sensationRecord?.evaluationSystem);
+    
     // Log the database creation step
     console.log('Creating recipe in database...');
     const recipe = await RecipeModel.create(transformedInput as RecipeInput);
