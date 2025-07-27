@@ -7,6 +7,8 @@ import type { CorsOptions } from 'cors';
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
     console.log(`CORS request from origin: ${origin}`);
+    console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
+    console.log(`FRONTEND_URL: ${process.env.FRONTEND_URL}`);
     
     // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) {
@@ -21,18 +23,15 @@ const corsOptions: CorsOptions = {
       'http://127.0.0.1:3001',        // Alternative localhost
     ];
 
-    // In production, add your production domains
-    if (process.env.NODE_ENV === 'production') {
-      // Add production origins here when deploying
-      if (process.env.FRONTEND_URL) {
-        allowedOrigins.push(process.env.FRONTEND_URL);
-      }
-      // Production frontend URLs (multiple Vercel deployments)
-      allowedOrigins.push('https://frontend-ruby-two-50.vercel.app');
-      allowedOrigins.push('https://frontend-ruby-two-50-git-main.vercel.app');
-      // New Vercel deployment domain
-      allowedOrigins.push('https://frontend-mwpjijmf6-caspars-projects-c6ee23d8.vercel.app');
+    // Always add production domains (don't gate behind NODE_ENV check)
+    if (process.env.FRONTEND_URL) {
+      allowedOrigins.push(process.env.FRONTEND_URL);
     }
+    // Production frontend URLs (multiple Vercel deployments)
+    allowedOrigins.push('https://frontend-ruby-two-50.vercel.app');
+    allowedOrigins.push('https://frontend-ruby-two-50-git-main.vercel.app');
+    // New Vercel deployment domain
+    allowedOrigins.push('https://frontend-mwpjijmf6-caspars-projects-c6ee23d8.vercel.app');
 
     console.log('CORS: Allowed origins:', allowedOrigins);
 
@@ -43,8 +42,8 @@ const corsOptions: CorsOptions = {
       return;
     }
     
-    // In production, also allow any Vercel deployment for this project
-    if (process.env.NODE_ENV === 'production' && origin) {
+    // Also allow any Vercel deployment for this project (regardless of NODE_ENV)
+    if (origin) {
       const isVercelDomain = (
         (origin.includes('frontend-ruby-two-50') && origin.includes('vercel.app')) ||
         (origin.includes('caspars-projects') && origin.includes('vercel.app')) ||
