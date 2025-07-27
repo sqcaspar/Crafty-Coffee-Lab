@@ -25,6 +25,13 @@ initDB();
 
 // Core middleware
 app.use(corsMiddleware);
+
+// Explicit OPTIONS handler for preflight requests
+app.options('*', (req, res) => {
+  console.log(`OPTIONS request from ${req.headers.origin} for ${req.url}`);
+  res.status(200).end();
+});
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 

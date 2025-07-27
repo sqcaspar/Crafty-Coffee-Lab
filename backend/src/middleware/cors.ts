@@ -6,8 +6,11 @@ import type { CorsOptions } from 'cors';
  */
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
+    console.log(`CORS request from origin: ${origin}`);
+    
     // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) {
+      console.log('CORS: Allowing request with no origin');
       return callback(null, true);
     }
 
@@ -31,8 +34,11 @@ const corsOptions: CorsOptions = {
       allowedOrigins.push('https://frontend-mwpjijmf6-caspars-projects-c6ee23d8.vercel.app');
     }
 
+    console.log('CORS: Allowed origins:', allowedOrigins);
+
     // Check if origin is in allowed list
     if (allowedOrigins.includes(origin)) {
+      console.log(`CORS: Allowing origin from allowed list: ${origin}`);
       callback(null, true);
       return;
     }
@@ -42,15 +48,18 @@ const corsOptions: CorsOptions = {
       const isVercelDomain = (
         (origin.includes('frontend-ruby-two-50') && origin.includes('vercel.app')) ||
         (origin.includes('caspars-projects') && origin.includes('vercel.app')) ||
-        (origin.includes('frontend-mwpjijmf6') && origin.includes('vercel.app'))
+        (origin.includes('frontend-mwpjijmf6') && origin.includes('vercel.app')) ||
+        origin.includes('vercel.app') // Temporarily allow all Vercel domains for debugging
       );
       if (isVercelDomain) {
+        console.log(`CORS: Allowing Vercel domain: ${origin}`);
         callback(null, true);
         return;
       }
     }
     
     console.warn(`CORS blocked request from origin: ${origin}`);
+    console.warn(`Available origins: ${allowedOrigins.join(', ')}`);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
