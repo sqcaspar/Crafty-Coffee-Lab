@@ -24,10 +24,11 @@ const corsOptions: CorsOptions = {
       if (process.env.FRONTEND_URL) {
         allowedOrigins.push(process.env.FRONTEND_URL);
       }
-      // Production frontend URL
+      // Production frontend URLs (multiple Vercel deployments)
       allowedOrigins.push('https://frontend-ruby-two-50.vercel.app');
-      // Allow any vercel deployment for this project
       allowedOrigins.push('https://frontend-ruby-two-50-git-main.vercel.app');
+      // New Vercel deployment domain
+      allowedOrigins.push('https://frontend-mwpjijmf6-caspars-projects-c6ee23d8.vercel.app');
     }
 
     // Check if origin is in allowed list
@@ -38,7 +39,11 @@ const corsOptions: CorsOptions = {
     
     // In production, also allow any Vercel deployment for this project
     if (process.env.NODE_ENV === 'production' && origin) {
-      const isVercelDomain = origin.includes('frontend-ruby-two-50') && origin.includes('vercel.app');
+      const isVercelDomain = (
+        (origin.includes('frontend-ruby-two-50') && origin.includes('vercel.app')) ||
+        (origin.includes('caspars-projects') && origin.includes('vercel.app')) ||
+        (origin.includes('frontend-mwpjijmf6') && origin.includes('vercel.app'))
+      );
       if (isVercelDomain) {
         callback(null, true);
         return;
