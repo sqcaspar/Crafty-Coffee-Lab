@@ -151,6 +151,86 @@ router.post('/', asyncHandler(async (req: Request, res: Response) => {
     }
     console.log('✅ All fields within length limits');
     
+    // CRITICAL: Validate required fields (coffee_beans and water cannot be null/empty)
+    const validateRequiredFields = (input: any) => {
+      const errors: string[] = [];
+      
+      // Check coffee_beans (required)
+      const coffeeBeans = input.measurements?.coffeeBeans;
+      if (coffeeBeans === null || coffeeBeans === undefined || coffeeBeans === '' || isNaN(Number(coffeeBeans)) || Number(coffeeBeans) <= 0) {
+        console.log(`❌ Invalid coffee_beans: ${coffeeBeans} (type: ${typeof coffeeBeans})`);
+        errors.push('Coffee beans amount is required and must be a positive number');
+      }
+      
+      // Check water (required) 
+      const water = input.measurements?.water;
+      if (water === null || water === undefined || water === '' || isNaN(Number(water)) || Number(water) <= 0) {
+        console.log(`❌ Invalid water: ${water} (type: ${typeof water})`);
+        errors.push('Water amount is required and must be a positive number');
+      }
+      
+      // Check grinder_model (required)
+      const grinderModel = input.brewingParameters?.grinderModel;
+      if (!grinderModel || typeof grinderModel !== 'string' || grinderModel.trim() === '') {
+        console.log(`❌ Invalid grinder_model: ${grinderModel}`);
+        errors.push('Grinder model is required');
+      }
+      
+      // Check grinder_unit (required)
+      const grinderUnit = input.brewingParameters?.grinderUnit;
+      if (!grinderUnit || typeof grinderUnit !== 'string' || grinderUnit.trim() === '') {
+        console.log(`❌ Invalid grinder_unit: ${grinderUnit}`);
+        errors.push('Grinder setting is required');
+      }
+      
+      // Check origin (required)
+      const origin = input.beanInfo?.origin;
+      if (!origin || typeof origin !== 'string' || origin.trim() === '') {
+        console.log(`❌ Invalid origin: ${origin}`);
+        errors.push('Coffee origin is required');
+      }
+      
+      // Check processing_method (required)
+      const processingMethod = input.beanInfo?.processingMethod;
+      if (!processingMethod || typeof processingMethod !== 'string' || processingMethod.trim() === '') {
+        console.log(`❌ Invalid processing_method: ${processingMethod}`);
+        errors.push('Processing method is required');
+      }
+      
+      return errors;
+    };
+    
+    console.log('🔍 Validating required fields...');
+    const requiredFieldErrors = validateRequiredFields(transformedInput);
+    if (requiredFieldErrors.length > 0) {
+      console.error('❌ Required field validation failed:', requiredFieldErrors);
+      throw createApiError.badRequest(`Missing required fields: ${requiredFieldErrors.join(', ')}`);
+    }
+    console.log('✅ All required fields are valid');
+    
+    // Ensure measurements are properly converted to numbers
+    if (transformedInput.measurements) {
+      transformedInput.measurements.coffeeBeans = Number(transformedInput.measurements.coffeeBeans);
+      transformedInput.measurements.water = Number(transformedInput.measurements.water);
+      if (transformedInput.measurements.coffeeWaterRatio) {
+        transformedInput.measurements.coffeeWaterRatio = Number(transformedInput.measurements.coffeeWaterRatio);
+      }
+      if (transformedInput.measurements.brewedCoffeeWeight) {
+        transformedInput.measurements.brewedCoffeeWeight = Number(transformedInput.measurements.brewedCoffeeWeight);
+      }
+      if (transformedInput.measurements.tds) {
+        transformedInput.measurements.tds = Number(transformedInput.measurements.tds);
+      }
+      if (transformedInput.measurements.extractionYield) {
+        transformedInput.measurements.extractionYield = Number(transformedInput.measurements.extractionYield);
+      }
+      console.log('✅ Measurements converted to numbers:', {
+        coffeeBeans: transformedInput.measurements.coffeeBeans,
+        water: transformedInput.measurements.water,
+        ratio: transformedInput.measurements.coffeeWaterRatio
+      });
+    }
+    
     // Log the database creation step
     console.log('Creating recipe in database...');
     const recipe = await RecipeModel.create(transformedInput as RecipeInput);
@@ -266,6 +346,86 @@ router.put('/:id', validateUUIDParam, asyncHandler(async (req: Request, res: Res
       throw createApiError.badRequest(`Field validation failed: ${lengthErrors.join(', ')}`);
     }
     console.log('UPDATE - ✅ All fields within length limits');
+    
+    // CRITICAL: Validate required fields for UPDATE as well
+    const validateRequiredFields = (input: any) => {
+      const errors: string[] = [];
+      
+      // Check coffee_beans (required)
+      const coffeeBeans = input.measurements?.coffeeBeans;
+      if (coffeeBeans === null || coffeeBeans === undefined || coffeeBeans === '' || isNaN(Number(coffeeBeans)) || Number(coffeeBeans) <= 0) {
+        console.log(`UPDATE - ❌ Invalid coffee_beans: ${coffeeBeans} (type: ${typeof coffeeBeans})`);
+        errors.push('Coffee beans amount is required and must be a positive number');
+      }
+      
+      // Check water (required) 
+      const water = input.measurements?.water;
+      if (water === null || water === undefined || water === '' || isNaN(Number(water)) || Number(water) <= 0) {
+        console.log(`UPDATE - ❌ Invalid water: ${water} (type: ${typeof water})`);
+        errors.push('Water amount is required and must be a positive number');
+      }
+      
+      // Check grinder_model (required)
+      const grinderModel = input.brewingParameters?.grinderModel;
+      if (!grinderModel || typeof grinderModel !== 'string' || grinderModel.trim() === '') {
+        console.log(`UPDATE - ❌ Invalid grinder_model: ${grinderModel}`);
+        errors.push('Grinder model is required');
+      }
+      
+      // Check grinder_unit (required)
+      const grinderUnit = input.brewingParameters?.grinderUnit;
+      if (!grinderUnit || typeof grinderUnit !== 'string' || grinderUnit.trim() === '') {
+        console.log(`UPDATE - ❌ Invalid grinder_unit: ${grinderUnit}`);
+        errors.push('Grinder setting is required');
+      }
+      
+      // Check origin (required)
+      const origin = input.beanInfo?.origin;
+      if (!origin || typeof origin !== 'string' || origin.trim() === '') {
+        console.log(`UPDATE - ❌ Invalid origin: ${origin}`);
+        errors.push('Coffee origin is required');
+      }
+      
+      // Check processing_method (required)
+      const processingMethod = input.beanInfo?.processingMethod;
+      if (!processingMethod || typeof processingMethod !== 'string' || processingMethod.trim() === '') {
+        console.log(`UPDATE - ❌ Invalid processing_method: ${processingMethod}`);
+        errors.push('Processing method is required');
+      }
+      
+      return errors;
+    };
+    
+    console.log('UPDATE - 🔍 Validating required fields...');
+    const requiredFieldErrors = validateRequiredFields(transformedInput);
+    if (requiredFieldErrors.length > 0) {
+      console.error('UPDATE - ❌ Required field validation failed:', requiredFieldErrors);
+      throw createApiError.badRequest(`Missing required fields: ${requiredFieldErrors.join(', ')}`);
+    }
+    console.log('UPDATE - ✅ All required fields are valid');
+    
+    // Ensure measurements are properly converted to numbers
+    if (transformedInput.measurements) {
+      transformedInput.measurements.coffeeBeans = Number(transformedInput.measurements.coffeeBeans);
+      transformedInput.measurements.water = Number(transformedInput.measurements.water);
+      if (transformedInput.measurements.coffeeWaterRatio) {
+        transformedInput.measurements.coffeeWaterRatio = Number(transformedInput.measurements.coffeeWaterRatio);
+      }
+      if (transformedInput.measurements.brewedCoffeeWeight) {
+        transformedInput.measurements.brewedCoffeeWeight = Number(transformedInput.measurements.brewedCoffeeWeight);
+      }
+      if (transformedInput.measurements.tds) {
+        transformedInput.measurements.tds = Number(transformedInput.measurements.tds);
+      }
+      if (transformedInput.measurements.extractionYield) {
+        transformedInput.measurements.extractionYield = Number(transformedInput.measurements.extractionYield);
+      }
+      console.log('UPDATE - ✅ Measurements converted to numbers:', {
+        coffeeBeans: transformedInput.measurements.coffeeBeans,
+        water: transformedInput.measurements.water,
+        ratio: transformedInput.measurements.coffeeWaterRatio
+      });
+    }
     
     // Update the recipe
     const updatedRecipe = await RecipeModel.update(id, transformedInput as RecipeInput);
