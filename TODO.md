@@ -9,11 +9,7 @@
 *Tasks currently being worked on*
 
 ### 🔄 Current Session Tasks
-- [✅] **Remove ALL Validation Constraints** - COMPLETED
-  - ✅ Updated shared validation schemas to accept any input type
-  - ✅ Removed backend API validation middleware from POST/PUT routes
-  - ✅ Removed ALL database CHECK constraints from schema
-  - ✅ Ready for deployment to fix recipe saving issues
+*No tasks currently active*
 
 ---
 
@@ -35,6 +31,12 @@
 *Tasks completed with timestamps*
 
 ### 2025-07-27
+- ✅ **CRITICAL: Remove ALL Validation Constraints** - Fixed recipe saving failures
+  - Removed frontend Zod validation constraints (TurbulenceStep, SCA, CVA schemas)
+  - Removed backend API validation middleware from POST/PUT recipe routes
+  - Removed ALL database CHECK constraints from Supabase schema
+  - Deployed to production via GitHub auto-deployment
+  - Users can now input any data type in any field without validation errors
 - ✅ **TODO.md System Setup** - Created comprehensive task tracking system
   - Created TODO.md file with task management structure
   - Updated CLAUDE.md with TODO.md maintenance instructions
