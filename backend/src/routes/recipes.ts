@@ -90,7 +90,7 @@ router.post('/', asyncHandler(async (req: Request, res: Response) => {
     // Log the database creation step
     console.log('Creating recipe in database...');
     const recipe = await RecipeModel.create(transformedInput as RecipeInput);
-    console.log('Recipe created successfully:', recipe.recipe_id);
+    console.log('Recipe created successfully:', recipe.recipeId);
     
     const response: RecipeResponse = {
       success: true,
