@@ -140,10 +140,9 @@ export class RecipeModel {
     const sensation = input.sensationRecord;
     
     // Explicit handling of evaluation_system field
-    let evaluationSystem = sensation.evaluationSystem;
+    const evaluationSystem = sensation.evaluationSystem ?? undefined;
     if (!evaluationSystem) {
-      console.log('RecipeModel: No evaluation_system provided, using NULL for database');
-      evaluationSystem = null;
+      console.log('RecipeModel: No evaluation_system provided, using undefined for database');
     } else {
       console.log(`RecipeModel: Using evaluation_system: '${evaluationSystem}'`);
     }
