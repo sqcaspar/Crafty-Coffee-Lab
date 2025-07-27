@@ -10,11 +10,18 @@ RUN mkdir -p /app/data
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install all dependencies (including dev dependencies for build)
+RUN npm ci
 
-# Copy built application
-COPY dist/ ./dist/
+# Copy source code
+COPY src/ ./src/
+COPY tsconfig*.json ./
+
+# Build TypeScript application
+RUN npm run build:railway
+
+# Remove dev dependencies to reduce image size
+RUN npm ci --only=production
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs
