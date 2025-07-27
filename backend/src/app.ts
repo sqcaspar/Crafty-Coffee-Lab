@@ -46,8 +46,9 @@ app.get('/', (req, res) => {
   res.json({ 
     status: 'ok', 
     message: 'Coffee Brewing Tracker API',
-    version: '1.0.0',
-    timestamp: new Date().toISOString()
+    version: '1.0.1',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 

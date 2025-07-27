@@ -36,10 +36,11 @@ USER coffee-tracker
 # Expose port
 EXPOSE 3001
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+# Health check using Railway's dynamic port
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD node -e "const http = require('http'); \
-  const options = { host: 'localhost', port: 3001, path: '/', timeout: 2000 }; \
+  const port = process.env.PORT || 3001; \
+  const options = { host: '0.0.0.0', port: port, path: '/', timeout: 2000 }; \
   const req = http.request(options, (res) => { \
     process.exit(res.statusCode === 200 ? 0 : 1); \
   }); \
