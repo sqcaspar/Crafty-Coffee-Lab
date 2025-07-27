@@ -31,14 +31,14 @@ export const BeanInfoSchema = z.object({
 });
 
 // Individual Brewing Parameters field schemas for isolated validation
-export const WaterTemperatureFieldSchema = z.number().int().min(MIN_WATER_TEMPERATURE, `Temperature must be at least ${MIN_WATER_TEMPERATURE}°C`).max(MAX_WATER_TEMPERATURE, `Temperature must not exceed ${MAX_WATER_TEMPERATURE}°C`).optional();
-export const BrewingMethodFieldSchema = BrewingMethodSchema.optional();
+export const WaterTemperatureFieldSchema = z.any().optional();
+export const BrewingMethodFieldSchema = z.any().optional();
 // GrinderModel supports both predefined enum values and custom strings (when "Others" is selected)
-export const GrinderModelFieldSchema = z.string().min(1, 'Grinder model is required').max(100, 'Grinder model must be 100 characters or less');
+export const GrinderModelFieldSchema = z.any().optional();
 // GrinderUnit supports both numeric strings (1-40) and descriptive strings for backward compatibility
-export const GrinderUnitFieldSchema = z.string().min(1, 'Grinder setting is required').max(50, 'Grinder setting must be 50 characters or less');
+export const GrinderUnitFieldSchema = z.any().optional();
 // FilteringTools supports both enum values (Paper, Metal, Cloth) and descriptive strings for backward compatibility
-export const FilteringToolsFieldSchema = z.string().max(100, 'Filtering tools must be 100 characters or less').optional();
+export const FilteringToolsFieldSchema = z.any().optional();
 
 // TurbulenceStep schema for structured brewing steps
 export const TurbulenceStepSchema = z.object({
@@ -48,12 +48,9 @@ export const TurbulenceStepSchema = z.object({
 });
 
 // Turbulence supports both legacy string format and new structured steps for backward compatibility
-export const TurbulenceFieldSchema = z.union([
-  z.string().max(200, 'Turbulence description must be 200 characters or less'),
-  z.array(TurbulenceStepSchema).min(1, 'At least one turbulence step is required').max(10, 'Maximum 10 turbulence steps allowed')
-]).optional();
+export const TurbulenceFieldSchema = z.any().optional();
 
-export const AdditionalNotesFieldSchema = z.string().max(1000, 'Additional notes must be 1000 characters or less').optional();
+export const AdditionalNotesFieldSchema = z.any().optional();
 
 // Brewing Parameters validation schema
 export const BrewingParametersSchema = z.object({
@@ -67,12 +64,12 @@ export const BrewingParametersSchema = z.object({
 });
 
 // Individual Measurements field schemas for isolated validation
-export const CoffeeBeansFieldSchema = z.number().positive('Coffee beans amount must be positive').max(1000, 'Coffee beans amount must be reasonable');
-export const WaterFieldSchema = z.number().positive('Water amount must be positive').max(10000, 'Water amount must be reasonable');
-export const CoffeeWaterRatioFieldSchema = z.number().positive('Coffee to water ratio must be positive');
-export const BrewedCoffeeWeightFieldSchema = z.number().positive('Brewed coffee weight must be positive').max(1000, 'Brewed coffee weight must be reasonable').optional();
-export const TdsFieldSchema = z.number().min(0, 'TDS must be positive').max(100, 'TDS percentage must be 100% or less').optional();
-export const ExtractionYieldFieldSchema = z.number().min(0, 'Extraction yield must be positive').max(100, 'Extraction yield must be 100% or less').optional();
+export const CoffeeBeansFieldSchema = z.any().optional();
+export const WaterFieldSchema = z.any().optional();
+export const CoffeeWaterRatioFieldSchema = z.any().optional();
+export const BrewedCoffeeWeightFieldSchema = z.any().optional();
+export const TdsFieldSchema = z.any().optional();
+export const ExtractionYieldFieldSchema = z.any().optional();
 
 // Measurements validation schema
 export const MeasurementsSchema = z.object({
@@ -95,14 +92,14 @@ export const MeasurementsInputSchema = z.object({
 });
 
 // Individual Sensation Record field schemas for isolated validation
-export const OverallImpressionFieldSchema = z.number().int().min(1, 'Overall impression must be at least 1').max(10, 'Overall impression must be at most 10');
-export const AcidityFieldSchema = z.number().int().min(1, 'Acidity must be at least 1').max(10, 'Acidity must be at most 10').optional();
-export const BodyFieldSchema = z.number().int().min(1, 'Body must be at least 1').max(10, 'Body must be at most 10').optional();
-export const SweetnessFieldSchema = z.number().int().min(1, 'Sweetness must be at least 1').max(10, 'Sweetness must be at most 10').optional();
-export const FlavorFieldSchema = z.number().int().min(1, 'Flavor must be at least 1').max(10, 'Flavor must be at most 10').optional();
-export const AftertasteFieldSchema = z.number().int().min(1, 'Aftertaste must be at least 1').max(10, 'Aftertaste must be at most 10').optional();
-export const BalanceFieldSchema = z.number().int().min(1, 'Balance must be at least 1').max(10, 'Balance must be at most 10').optional();
-export const TastingNotesFieldSchema = z.string().max(2000, 'Tasting notes must be 2000 characters or less').optional();
+export const OverallImpressionFieldSchema = z.any().optional();
+export const AcidityFieldSchema = z.any().optional();
+export const BodyFieldSchema = z.any().optional();
+export const SweetnessFieldSchema = z.any().optional();
+export const FlavorFieldSchema = z.any().optional();
+export const AftertasteFieldSchema = z.any().optional();
+export const BalanceFieldSchema = z.any().optional();
+export const TastingNotesFieldSchema = z.any().optional();
 
 // SCA/CVA Evaluation System Validation Schemas
 
@@ -229,22 +226,19 @@ export const SensationRecordWithEvaluationSchema = z.object({
   evaluationSystem: EvaluationSystemSchema.optional(),
   
   // Legacy fields (maintain backwards compatibility)
-  overallImpression: z.any().optional(),
-  acidity: z.any().optional(),
-  body: z.any().optional(),
-  sweetness: z.any().optional(),
-  flavor: z.any().optional(),
-  aftertaste: z.any().optional(),
-  balance: z.any().optional(),
-  tastingNotes: z.any().optional(),
+  overallImpression: OverallImpressionFieldSchema,
+  acidity: AcidityFieldSchema,
+  body: BodyFieldSchema,
+  sweetness: SweetnessFieldSchema,
+  flavor: FlavorFieldSchema,
+  aftertaste: AftertasteFieldSchema,
+  balance: BalanceFieldSchema,
+  tastingNotes: TastingNotesFieldSchema,
   
   // New evaluation systems
   traditionalSCA: TraditionalSCAEvaluationSchema,
   cvaDescriptive: CVADescriptiveAssessmentSchema,
   cvaAffective: CVAAffectiveAssessmentSchema
-}).refine(hasAtLeastOneTastingField, {
-  message: 'Please fill at least one field in any tasting evaluation tab (Quick Tasting, SCA Traditional, or CVA Descriptive)',
-  path: ['sensationRecord']
 });
 
 // Legacy Sensation Record validation schema (1-10 scale validation)

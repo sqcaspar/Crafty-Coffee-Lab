@@ -18,7 +18,7 @@ export const FilteringToolSchema = z.nativeEnum(FilteringTool);
 export const OriginFieldSchema = z.any().optional();
 export const ProcessingMethodFieldSchema = z.any().optional();
 export const AltitudeFieldSchema = z.any().optional();
-export const RoastingDateFieldSchema = z.string().optional();
+export const RoastingDateFieldSchema = z.any().optional();
 export const RoastingLevelFieldSchema = z.any().optional();
 
 // Bean Information validation schema
@@ -95,14 +95,14 @@ export const MeasurementsInputSchema = z.object({
 });
 
 // Individual Sensation Record field schemas for isolated validation
-export const OverallImpressionFieldSchema = z.union([z.number(), z.string()]).optional();
-export const AcidityFieldSchema = z.union([z.number(), z.string()]).optional();
-export const BodyFieldSchema = z.union([z.number(), z.string()]).optional();
-export const SweetnessFieldSchema = z.union([z.number(), z.string()]).optional();
-export const FlavorFieldSchema = z.union([z.number(), z.string()]).optional();
-export const AftertasteFieldSchema = z.union([z.number(), z.string()]).optional();
-export const BalanceFieldSchema = z.union([z.number(), z.string()]).optional();
-export const TastingNotesFieldSchema = z.string().max(2000, 'Tasting notes must be 2000 characters or less').optional();
+export const OverallImpressionFieldSchema = z.any().optional();
+export const AcidityFieldSchema = z.any().optional();
+export const BodyFieldSchema = z.any().optional();
+export const SweetnessFieldSchema = z.any().optional();
+export const FlavorFieldSchema = z.any().optional();
+export const AftertasteFieldSchema = z.any().optional();
+export const BalanceFieldSchema = z.any().optional();
+export const TastingNotesFieldSchema = z.any().optional();
 
 // SCA/CVA Evaluation System Validation Schemas
 
@@ -236,7 +236,7 @@ export const SensationRecordWithEvaluationSchema = z.object({
   flavor: FlavorFieldSchema,
   aftertaste: AftertasteFieldSchema,
   balance: BalanceFieldSchema,
-  tastingNotes: z.string().max(2000, 'Tasting notes must be 2000 characters or less').optional(),
+  tastingNotes: TastingNotesFieldSchema,
   
   // New evaluation systems
   traditionalSCA: TraditionalSCAEvaluationSchema,
