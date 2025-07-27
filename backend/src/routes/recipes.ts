@@ -1,9 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { RecipeModel } from '../database/index.js';
-import { validateBody, validateUUIDParam, asyncHandler, createApiError } from '../middleware/index.js';
+import { validateUUIDParam, asyncHandler, createApiError } from '../middleware/index.js';
 import { 
-  RecipeInputSchema, 
-  RecipeUpdateSchema, 
   transformRecipeInput,
   type ApiResponse,
   type RecipeResponse,
@@ -65,7 +63,7 @@ router.get('/:id', validateUUIDParam, asyncHandler(async (req: Request, res: Res
  * POST /api/recipes
  * Create a new recipe
  */
-router.post('/', validateBody(RecipeInputSchema), asyncHandler(async (req: Request, res: Response) => {
+router.post('/', asyncHandler(async (req: Request, res: Response) => {
   try {
     // Transform and enhance input data
     const transformedInput = transformRecipeInput(req.body);
@@ -92,7 +90,7 @@ router.post('/', validateBody(RecipeInputSchema), asyncHandler(async (req: Reque
  * PUT /api/recipes/:id
  * Update an existing recipe
  */
-router.put('/:id', validateUUIDParam, validateBody(RecipeUpdateSchema), asyncHandler(async (req: Request, res: Response) => {
+router.put('/:id', validateUUIDParam, asyncHandler(async (req: Request, res: Response) => {
   try {
     const { id } = req.params as { id: string };
     // Check if recipe exists

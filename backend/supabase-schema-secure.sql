@@ -37,45 +37,45 @@ CREATE TABLE IF NOT EXISTS recipes (
   tds DECIMAL(5,2),
   extraction_yield DECIMAL(5,2),
   
-  -- Sensation Record (Legacy fields for backwards compatibility)
-  overall_impression INTEGER CHECK (overall_impression >= 1 AND overall_impression <= 10),
-  acidity INTEGER CHECK (acidity >= 1 AND acidity <= 10),
-  body INTEGER CHECK (body >= 1 AND body <= 10),
-  sweetness INTEGER CHECK (sweetness >= 1 AND sweetness <= 10),
-  flavor INTEGER CHECK (flavor >= 1 AND flavor <= 10),
-  aftertaste INTEGER CHECK (aftertaste >= 1 AND aftertaste <= 10),
-  balance INTEGER CHECK (balance >= 1 AND balance <= 10),
+  -- Sensation Record (Legacy fields for backwards compatibility) - NO CONSTRAINTS
+  overall_impression INTEGER,
+  acidity INTEGER,
+  body INTEGER,
+  sweetness INTEGER,
+  flavor INTEGER,
+  aftertaste INTEGER,
+  balance INTEGER,
   tasting_notes TEXT,
   
-  -- Evaluation System Indicator
-  evaluation_system VARCHAR(20) CHECK (evaluation_system IN ('traditional-sca', 'cva-descriptive', 'cva-affective', 'legacy')),
+  -- Evaluation System Indicator - NO CONSTRAINTS
+  evaluation_system VARCHAR(50),
   
-  -- Traditional SCA Cupping Form (6-10 point scale with 0.25 increments)
-  sca_fragrance DECIMAL(4,2) CHECK (sca_fragrance >= 6 AND sca_fragrance <= 10),
-  sca_aroma DECIMAL(4,2) CHECK (sca_aroma >= 6 AND sca_aroma <= 10),
-  sca_flavor DECIMAL(4,2) CHECK (sca_flavor >= 6 AND sca_flavor <= 10),
-  sca_aftertaste DECIMAL(4,2) CHECK (sca_aftertaste >= 6 AND sca_aftertaste <= 10),
-  sca_acidity_quality DECIMAL(4,2) CHECK (sca_acidity_quality >= 6 AND sca_acidity_quality <= 10),
-  sca_acidity_intensity VARCHAR(10) CHECK (sca_acidity_intensity IN ('High', 'Medium', 'Low')),
-  sca_body_quality DECIMAL(4,2) CHECK (sca_body_quality >= 6 AND sca_body_quality <= 10),
-  sca_body_level VARCHAR(10) CHECK (sca_body_level IN ('Heavy', 'Medium', 'Thin')),
-  sca_balance DECIMAL(4,2) CHECK (sca_balance >= 6 AND sca_balance <= 10),
-  sca_overall DECIMAL(4,2) CHECK (sca_overall >= 6 AND sca_overall <= 10),
-  sca_uniformity INTEGER CHECK (sca_uniformity >= 0 AND sca_uniformity <= 10 AND sca_uniformity % 2 = 0),
-  sca_clean_cup INTEGER CHECK (sca_clean_cup >= 0 AND sca_clean_cup <= 10 AND sca_clean_cup % 2 = 0),
-  sca_sweetness INTEGER CHECK (sca_sweetness >= 0 AND sca_sweetness <= 10 AND sca_sweetness % 2 = 0),
-  sca_taint_defects INTEGER CHECK (sca_taint_defects >= 0 AND sca_taint_defects <= 20 AND sca_taint_defects % 2 = 0),
-  sca_fault_defects INTEGER CHECK (sca_fault_defects >= 0 AND sca_fault_defects <= 40 AND sca_fault_defects % 4 = 0),
-  sca_final_score DECIMAL(4,2) CHECK (sca_final_score >= 36 AND sca_final_score <= 100),
+  -- Traditional SCA Cupping Form - NO CONSTRAINTS
+  sca_fragrance DECIMAL(10,4),
+  sca_aroma DECIMAL(10,4),
+  sca_flavor DECIMAL(10,4),
+  sca_aftertaste DECIMAL(10,4),
+  sca_acidity_quality DECIMAL(10,4),
+  sca_acidity_intensity VARCHAR(50),
+  sca_body_quality DECIMAL(10,4),
+  sca_body_level VARCHAR(50),
+  sca_balance DECIMAL(10,4),
+  sca_overall DECIMAL(10,4),
+  sca_uniformity INTEGER,
+  sca_clean_cup INTEGER,
+  sca_sweetness INTEGER,
+  sca_taint_defects INTEGER,
+  sca_fault_defects INTEGER,
+  sca_final_score DECIMAL(10,4),
   
-  -- CVA Descriptive Assessment (SCA Standard 103-P/2024) - 0-15 intensity scale
-  cva_desc_fragrance INTEGER CHECK (cva_desc_fragrance >= 0 AND cva_desc_fragrance <= 15),
-  cva_desc_aroma INTEGER CHECK (cva_desc_aroma >= 0 AND cva_desc_aroma <= 15),
-  cva_desc_flavor INTEGER CHECK (cva_desc_flavor >= 0 AND cva_desc_flavor <= 15),
-  cva_desc_aftertaste INTEGER CHECK (cva_desc_aftertaste >= 0 AND cva_desc_aftertaste <= 15),
-  cva_desc_acidity INTEGER CHECK (cva_desc_acidity >= 0 AND cva_desc_acidity <= 15),
-  cva_desc_sweetness INTEGER CHECK (cva_desc_sweetness >= 0 AND cva_desc_sweetness <= 15),
-  cva_desc_mouthfeel INTEGER CHECK (cva_desc_mouthfeel >= 0 AND cva_desc_mouthfeel <= 15),
+  -- CVA Descriptive Assessment (SCA Standard 103-P/2024) - NO CONSTRAINTS
+  cva_desc_fragrance INTEGER,
+  cva_desc_aroma INTEGER,
+  cva_desc_flavor INTEGER,
+  cva_desc_aftertaste INTEGER,
+  cva_desc_acidity INTEGER,
+  cva_desc_sweetness INTEGER,
+  cva_desc_mouthfeel INTEGER,
   
   -- CATA Descriptor arrays (combined per SCA standard) - stored as JSONB for better performance
   cva_desc_fragrance_aroma_descriptors JSONB DEFAULT '[]',  -- Combined fragrance + aroma (≤5 total)
@@ -93,27 +93,27 @@ CREATE TABLE IF NOT EXISTS recipes (
   cva_desc_assessment_date TIMESTAMP WITH TIME ZONE,  -- Assessment completion date
   cva_desc_assessor_id VARCHAR(100),  -- Cupper identification
   
-  -- Quick Tasting Assessment (combination of CVA Descriptive and CVA Affective elements)
-  quick_tasting_flavor_intensity INTEGER CHECK (quick_tasting_flavor_intensity >= 0 AND quick_tasting_flavor_intensity <= 15),
-  quick_tasting_aftertaste_intensity INTEGER CHECK (quick_tasting_aftertaste_intensity >= 0 AND quick_tasting_aftertaste_intensity <= 15),
-  quick_tasting_acidity_intensity INTEGER CHECK (quick_tasting_acidity_intensity >= 0 AND quick_tasting_acidity_intensity <= 15),
-  quick_tasting_sweetness_intensity INTEGER CHECK (quick_tasting_sweetness_intensity >= 0 AND quick_tasting_sweetness_intensity <= 15),
-  quick_tasting_mouthfeel_intensity INTEGER CHECK (quick_tasting_mouthfeel_intensity >= 0 AND quick_tasting_mouthfeel_intensity <= 15),
-  quick_tasting_flavor_aftertaste_descriptors JSONB DEFAULT '[]',  -- CATA descriptors (≤5 selections)
-  quick_tasting_overall_quality INTEGER CHECK (quick_tasting_overall_quality >= 1 AND quick_tasting_overall_quality <= 9),
+  -- Quick Tasting Assessment (combination of CVA Descriptive and CVA Affective elements) - NO CONSTRAINTS
+  quick_tasting_flavor_intensity INTEGER,
+  quick_tasting_aftertaste_intensity INTEGER,
+  quick_tasting_acidity_intensity INTEGER,
+  quick_tasting_sweetness_intensity INTEGER,
+  quick_tasting_mouthfeel_intensity INTEGER,
+  quick_tasting_flavor_aftertaste_descriptors JSONB DEFAULT '[]',
+  quick_tasting_overall_quality INTEGER,
   
-  -- CVA Affective Assessment (1-9 quality scale)
-  cva_aff_fragrance INTEGER CHECK (cva_aff_fragrance >= 1 AND cva_aff_fragrance <= 9),
-  cva_aff_aroma INTEGER CHECK (cva_aff_aroma >= 1 AND cva_aff_aroma <= 9),
-  cva_aff_flavor INTEGER CHECK (cva_aff_flavor >= 1 AND cva_aff_flavor <= 9),
-  cva_aff_aftertaste INTEGER CHECK (cva_aff_aftertaste >= 1 AND cva_aff_aftertaste <= 9),
-  cva_aff_acidity INTEGER CHECK (cva_aff_acidity >= 1 AND cva_aff_acidity <= 9),
-  cva_aff_sweetness INTEGER CHECK (cva_aff_sweetness >= 1 AND cva_aff_sweetness <= 9),
-  cva_aff_mouthfeel INTEGER CHECK (cva_aff_mouthfeel >= 1 AND cva_aff_mouthfeel <= 9),
-  cva_aff_overall INTEGER CHECK (cva_aff_overall >= 1 AND cva_aff_overall <= 9),
-  cva_aff_non_uniform_cups INTEGER CHECK (cva_aff_non_uniform_cups >= 0 AND cva_aff_non_uniform_cups <= 5),
-  cva_aff_defective_cups INTEGER CHECK (cva_aff_defective_cups >= 0 AND cva_aff_defective_cups <= 5),
-  cva_aff_score DECIMAL(4,2) CHECK (cva_aff_score >= 0 AND cva_aff_score <= 100)
+  -- CVA Affective Assessment - NO CONSTRAINTS
+  cva_aff_fragrance INTEGER,
+  cva_aff_aroma INTEGER,
+  cva_aff_flavor INTEGER,
+  cva_aff_aftertaste INTEGER,
+  cva_aff_acidity INTEGER,
+  cva_aff_sweetness INTEGER,
+  cva_aff_mouthfeel INTEGER,
+  cva_aff_overall INTEGER,
+  cva_aff_non_uniform_cups INTEGER,
+  cva_aff_defective_cups INTEGER,
+  cva_aff_score DECIMAL(10,4)
 );
 
 -- Create collections table with comprehensive schema (PostgreSQL)
