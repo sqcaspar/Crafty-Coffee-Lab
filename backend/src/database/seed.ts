@@ -1,7 +1,7 @@
 import { RecipeModel } from './models/Recipe.js';
 import { CollectionModel } from './models/Collection.js';
-import { CoffeeOrigin, ProcessingMethod, GrinderModel, FilteringTool } from 'coffee-tracker-shared';
-import type { RecipeInput, RoastingLevel, BrewingMethod, CollectionColor, TurbulenceStep } from 'coffee-tracker-shared';
+import { CoffeeOrigin, ProcessingMethod, GrinderModel, FilteringTool } from '../shared/index.js';
+import type { RecipeInput, RoastingLevel, BrewingMethod, CollectionColor, TurbulenceStep } from '../shared/index.js';
 
 // Sample recipe data for development and testing
 const sampleRecipes: RecipeInput[] = [

@@ -7,7 +7,7 @@ import {
   type RecipeResponse,
   type RecipeListResponse,
   type RecipeInput 
-} from 'coffee-tracker-shared';
+} from '../shared/index.js';
 
 const router = Router();
 

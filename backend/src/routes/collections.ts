@@ -8,7 +8,7 @@ import {
   type ApiResponse,
   type CollectionResponse,
   type CollectionListResponse 
-} from 'coffee-tracker-shared';
+} from '../shared/index.js';
 
 const router = Router();
 

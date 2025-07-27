@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '../supabase.js';
-import type { Recipe, RecipeInput, RoastingLevel, BrewingMethod, EvaluationSystem } from 'coffee-tracker-shared';
+import type { Recipe, RecipeInput, RoastingLevel, BrewingMethod, EvaluationSystem } from '../../shared/index.js';
 
 export class RecipeModel {
   // Convert database row to Recipe interface

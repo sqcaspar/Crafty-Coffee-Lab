@@ -2,12 +2,12 @@
 import { supabase } from './supabase.js';
 import { RecipeModel } from './models/Recipe.js';
 import { CollectionModel } from './models/Collection.js';
-import { CollectionColor } from 'coffee-tracker-shared';
+import { CollectionColor } from '../shared/index.js';
 
 export { supabase, RecipeModel, CollectionModel };
 
 // Re-export types from shared package for convenience
-export type { Recipe, RecipeInput, Collection } from 'coffee-tracker-shared';
+export type { Recipe, RecipeInput, Collection } from '../shared/index.js';
 
 // Initialize database function for Supabase (much simpler)
 export const initializeDatabase = async (): Promise<void> => {

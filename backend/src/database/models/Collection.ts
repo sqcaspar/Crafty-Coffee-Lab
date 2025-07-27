@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '../supabase.js';
-import type { Collection, CollectionStats, CollectionColor, CollectionInput, CollectionUpdate } from 'coffee-tracker-shared';
+import type { Collection, CollectionStats, CollectionColor, CollectionInput, CollectionUpdate } from '../../shared/index.js';
 
 export class CollectionModel {
   // Convert database row to Collection interface

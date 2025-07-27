@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
-import type { ApiResponse, ValidationErrorResponse } from 'coffee-tracker-shared';
+import type { ApiResponse, ValidationErrorResponse } from '../shared/index.js';
 
 /**
  * Generic validation middleware factory
