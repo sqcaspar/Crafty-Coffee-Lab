@@ -10,9 +10,6 @@ restartPolicyMaxRetries = 3
 
 [environments.production.variables]
 NODE_ENV = "production"
-# Supabase Database Configuration (set these in Railway dashboard)
-# SUPABASE_URL = "https://your-project-id.supabase.co"
-# SUPABASE_ANON_KEY = "your-anon-key"
-# SUPABASE_SERVICE_KEY = "your-service-key"
-# DATABASE_URL = "postgresql://postgres:password@db.project-id.supabase.co:5432/postgres"
-# CORS_ORIGIN = "https://your-vercel-domain.vercel.app"
+SUPABASE_URL = "https://hgqcuesummlopvgfnces.supabase.co"
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncWN1ZXN1bW1sb3B2Z2ZuY2VzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI2MDQsImV4cCI6MjA2OTA3ODYwNH0.G7y7Ep2whkmtMZ-fHQr3VCGweQyRv4MS6AkpkDBtw08"
+FRONTEND_URL = "https://frontend-ruby-two-50.vercel.app"

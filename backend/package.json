@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "nodemon src/server.ts",
     "build": "cd ../shared && npm run build && cd ../backend && tsc --project tsconfig.build.json",
+    "build:railway": "tsc --project tsconfig.build.json",
     "build:dev": "tsc",
     "start": "node dist/server.js",
     "test": "jest",

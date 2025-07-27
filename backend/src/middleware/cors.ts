@@ -24,9 +24,10 @@ const corsOptions: CorsOptions = {
       if (process.env.FRONTEND_URL) {
         allowedOrigins.push(process.env.FRONTEND_URL);
       }
-      // Common production patterns for deployment platforms
-      allowedOrigins.push('https://crafty-coffee-lab.vercel.app');
-      allowedOrigins.push('https://crafty-coffee-lab-git-main.vercel.app');
+      // Production frontend URL
+      allowedOrigins.push('https://frontend-ruby-two-50.vercel.app');
+      // Allow any vercel deployment for this project
+      allowedOrigins.push('https://frontend-ruby-two-50-git-main.vercel.app');
     }
 
     // Check if origin is in allowed list
@@ -37,7 +38,7 @@ const corsOptions: CorsOptions = {
     
     // In production, also allow any Vercel deployment for this project
     if (process.env.NODE_ENV === 'production' && origin) {
-      const isVercelDomain = origin.includes('crafty-coffee-lab') && origin.includes('vercel.app');
+      const isVercelDomain = origin.includes('frontend-ruby-two-50') && origin.includes('vercel.app');
       if (isVercelDomain) {
         callback(null, true);
         return;
