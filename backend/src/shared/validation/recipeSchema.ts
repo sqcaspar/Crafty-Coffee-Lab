@@ -303,7 +303,24 @@ export const transformRecipeInput = (input: z.infer<typeof RecipeInputSchema>): 
   // Generate recipe name if not provided
   if (!transformed.recipeName?.trim()) {
     const date = new Date().toLocaleDateString();
-    transformed.recipeName = `${transformed.beanInfo.origin} - ${date}`;
+    const baseName = `${transformed.beanInfo.origin} - ${date}`;
+    
+    // Ensure generated name doesn't exceed 200 chars
+    if (baseName.length <= 200) {
+      transformed.recipeName = baseName;
+    } else {
+      // Truncate origin if needed (reserve space for " - " + date)
+      const dateStr = ` - ${date}`;
+      const maxOriginLength = 200 - dateStr.length - 3; // Reserve 3 chars for "..."
+      const truncatedOrigin = transformed.beanInfo.origin.substring(0, maxOriginLength) + '...';
+      transformed.recipeName = `${truncatedOrigin}${dateStr}`;
+      console.log(`Generated recipe name truncated to: "${transformed.recipeName}" (${transformed.recipeName.length} chars)`);
+    }
+  } else if (transformed.recipeName.trim().length > 200) {
+    // Truncate provided recipe name if too long
+    const originalLength = transformed.recipeName.length;
+    transformed.recipeName = transformed.recipeName.trim().substring(0, 197) + '...';
+    console.log(`Recipe name truncated from ${originalLength} to ${transformed.recipeName.length} chars`);
   }
   
   return { ...transformed, recipeName: transformed.recipeName || 'Unknown Recipe' };

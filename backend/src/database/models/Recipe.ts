@@ -129,10 +129,32 @@ export class RecipeModel {
   // Generate recipe name if not provided
   private static generateRecipeName(input: RecipeInput): string {
     if (input.recipeName?.trim()) {
-      return input.recipeName.trim();
+      // Ensure provided recipe name doesn't exceed 200 chars
+      const trimmed = input.recipeName.trim();
+      if (trimmed.length <= 200) {
+        return trimmed;
+      }
+      console.log(`Recipe name too long (${trimmed.length} chars), truncating to 200`);
+      return trimmed.substring(0, 197) + '...';
     }
+    
+    // Generate name from origin and date
     const date = new Date().toLocaleDateString();
-    return `${input.beanInfo.origin} - ${date}`;
+    const baseName = `${input.beanInfo.origin} - ${date}`;
+    
+    // Ensure generated name doesn't exceed 200 chars
+    if (baseName.length <= 200) {
+      return baseName;
+    }
+    
+    // Truncate origin if needed (reserve space for " - " + date)
+    const dateStr = ` - ${date}`;
+    const maxOriginLength = 200 - dateStr.length - 3; // Reserve 3 chars for "..."
+    const truncatedOrigin = input.beanInfo.origin.substring(0, maxOriginLength) + '...';
+    const finalName = `${truncatedOrigin}${dateStr}`;
+    
+    console.log(`Generated recipe name too long, truncated to: "${finalName}" (${finalName.length} chars)`);
+    return finalName;
   }
 
   // Helper method to prepare evaluation data for database insertion
